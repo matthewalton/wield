@@ -10,4 +10,4 @@ Skills are authored and invoked exactly as normal. This project adds:
 - **Telemetry** — Claude Code's native OTEL events (`claude_code.skill_activated`) capture per-skill, per-person usage for *all* skills, sidecar or not.
 - **Dashboard** *(planned)* — joins usage with the scanned metadata map: most-used skills, usage per category, per person.
 
-Status: format spec drafted; scanner, telemetry rollout, and dashboard in progress. Domain language lives in [CONTEXT.md](CONTEXT.md).
+Status: format spec drafted; scanner, telemetry rollout, and dashboard in progress. The Phase 1 plan lives in [docs/PRD.md](docs/PRD.md); domain language in [CONTEXT.md](CONTEXT.md).
