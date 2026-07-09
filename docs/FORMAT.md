@@ -24,7 +24,7 @@ Its **presence opts the skill into enriched tracking**. Skills without one are s
 
 | Key | Meaning |
 |---|---|
-| `stages` | Lifecycle stage(s) the skill serves. Suggested vocabulary: `spec`, `plan`, `implement`, `test`, `review`. Agnostic skills omit it. |
+| `category` | Where the skill fits in the team's chosen taxonomy. Lifecycle stages (`spec`, `plan`, `implement`, `test`, `review`) are one common scheme — the format doesn't care which you pick. Agnostic skills omit it. |
 | `author` | Who wrote/owns the skill. |
 | `invokes` | Other skills this one invokes (documented intent; reserved for future tooling). |
 | `forked_from` | Provenance, if adapted from another skill (reserved for future tooling). |
@@ -32,7 +32,7 @@ Its **presence opts the skill into enriched tracking**. Skills without one are s
 ## Example
 
 ```yaml
-stages: [plan]
+category: [plan]
 author: sarah
 invokes: [grill-me]
 ```

@@ -1,3 +1,3 @@
-stages: [plan]
+category: [plan]
 author: sarah
 invokes: [grill-me]

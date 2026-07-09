@@ -16,12 +16,12 @@ A skill whose folder contains a sidecar. Untracked skills still appear in usage 
 _Avoid_: registered skill, catalogued skill
 
 **Dimension**:
-A team-defined key in a sidecar used to group usage (e.g. `stages`, `author`). Values are strings or lists of strings. The format reserves no keys; teams choose their own vocabulary.
-_Avoid_: category, tag, label, property
+A team-defined key in a sidecar used to group usage (e.g. `category`, `author`). Values are strings or lists of strings. The format reserves no keys; teams choose their own vocabulary.
+_Avoid_: tag, label, property
 
-**Stage**:
-A value of the `stages` dimension — a step in the team's development lifecycle (e.g. `spec`, `plan`, `implement`, `test`, `review`). A convention, not a built-in: agnostic skills simply omit it.
-_Avoid_: phase, step, column
+**Category**:
+A value of the `category` dimension — where a skill fits in the team's chosen taxonomy. Lifecycle stages (`spec`, `plan`, `implement`, `test`, `review`) are one common scheme, not a built-in; agnostic skills simply omit the key.
+_Avoid_: stage (as a format concept — fine as a team's own category values), phase, column
 
 **Usage**:
 Skill invocations observed via Claude Code OTEL telemetry (`claude_code.skill_activated` events, keyed by `skill.name`, attributed per user). Covers all skills, tracked or not.
@@ -35,7 +35,7 @@ The scanner's output: skill name → dimensions. The dashboard joins it against 
 _Avoid_: index, catalogue
 
 **Dashboard**:
-The visualization joining usage with the metadata map: most-used skills, usage per stage, per person.
+The visualization joining usage with the metadata map: most-used skills, usage per category, per person.
 
 ## Flagged ambiguities
 
@@ -44,9 +44,9 @@ The visualization joining usage with the metadata map: most-used skills, usage p
 
 ## Example dialogue
 
-**Dev:** Sarah's `ticket-planner` doesn't show up under the plan stage on the dashboard.
+**Dev:** Sarah's `ticket-planner` doesn't show up under the plan category on the dashboard.
 **Expert:** Is it a tracked skill? Check for a sidecar in its folder.
 **Dev:** No `meta.yaml`, just `SKILL.md`.
-**Expert:** Then it only appears in overall usage. Add a sidecar with `stages: [plan]` and the scanner will pick it up on the next export — telemetry doesn't change at all, the join just gains a dimension.
+**Expert:** Then it only appears in overall usage. Add a sidecar with `category: [plan]` and the scanner will pick it up on the next export — telemetry doesn't change at all, the join just gains a dimension.
 **Dev:** Should I tag `grill-me` while I'm at it?
-**Expert:** Only if the team wants it grouped somewhere. It's stage-agnostic, so leaving it untracked is a legitimate choice, not an omission.
+**Expert:** Only if the team wants it grouped somewhere. It's category-agnostic, so leaving it untracked is a legitimate choice, not an omission.
