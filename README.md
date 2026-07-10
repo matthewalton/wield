@@ -1,6 +1,4 @@
-# skill-tracking
-
-*(working name — final name TBD)*
+# Wield
 
 Track which Claude Code skills your team actually uses, and where in your development lifecycle — so "you should try X when planning" is backed by evidence, not anecdotes.
 

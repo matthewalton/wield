@@ -10,7 +10,7 @@ We want to enable Claude Code's built-in OpenTelemetry monitoring for the team, 
 
 > **Subject: Proposal — turn on Claude Code usage telemetry (skill usage, per person)**
 >
-> We're building skill-usage tracking so recommendations for "what skill should I use here" come from evidence instead of anecdotes (see the Phase 1 PRD in the skill-tracking repo).
+> We're building skill-usage tracking so recommendations for "what skill should I use here" come from evidence instead of anecdotes (see the Phase 1 PRD in the Wield repo).
 >
 > To do that we'd enable Claude Code's native OTEL telemetry via managed settings for everyone on the team. Concretely, that means the following would be collected into a backend the team controls:
 >

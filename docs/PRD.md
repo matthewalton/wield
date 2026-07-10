@@ -44,6 +44,6 @@ Two principles bind Phase 1 decisions to that direction:
 
 ## Notes
 
-- `skill-tracking` is a working name — the final name is Baton #76. Domain language lives in [`CONTEXT.md`](../CONTEXT.md).
-- Ticket references (#NN) point at the team's Baton board, project "Team Workflow Sharing".
+- The project is named **Wield** (decided 2026-07-10, Baton #76). Domain language lives in [`CONTEXT.md`](../CONTEXT.md).
+- Ticket references (#NN) point at the team's Baton board, project "Wield".
 - Team-first but OSS-shaped: nothing company-specific hardcoded; dimensions are data, not code.

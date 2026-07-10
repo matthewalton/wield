@@ -1,4 +1,4 @@
-# Skill Tracking
+# Wield
 
 Tracks which Claude Code skills a team actually uses and where in their development lifecycle, so recommendations come from evidence rather than anecdotes. Skills are authored and invoked exactly as normal — this project only observes and annotates.
 
