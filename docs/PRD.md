@@ -26,9 +26,9 @@ Two principles bind Phase 1 decisions to that direction:
 
 ## Components
 
-1. **Sidecar format `meta.yaml`** (#85): spec + committed example — **done 2026-07-10**, see [`FORMAT.md`](FORMAT.md) and [`examples/ticket-planner`](../examples/ticket-planner). Open key→value map (string / list-of-string values), no required or reserved keys; conventional: `category`, `author`, plus `invokes` and `forked_from` earmarked for future tooling. Vocabulary drift handled by an optional lint / optional vocab file — flexible by default, strict by choice.
+1. **Sidecar format `meta.yaml`** (#85): spec + committed example — **done 2026-07-10**, see [`FORMAT.md`](FORMAT.md) and [`examples/repo`](../examples/repo). Open key→value map, no required or reserved keys; conventional: `category`, `author`, `tags`, plus `invokes` and `forked_from` earmarked for future tooling. A value's shape decides its use — scalars group, lists filter (amended 2026-07-10, see [ADR-0002](adr/0002-query-time-join.md)). Vocabulary drift handled by an optional lint / optional vocab file — flexible by default, strict by choice.
 2. **Telemetry pipeline** (#80 — now the core ticket): Claude Code OTEL via managed settings → OTLP backend (direct export, no collector for Phase 1 — see [ADR-0001](adr/0001-otlp-backend.md)). Skill events with per-user attribution.
-3. **Dashboard + join** (#79): scanner exports the skill→metadata map from one or more roots (our monorepo is simply the single-root case); dashboard renders usage overall, by category/dimension, by person.
+3. **Dashboard + join** (#79): scanner exports the skill→metadata map from one or more roots (our monorepo is simply the single-root case) — **scanner done 2026-07-10** (`src/`, JSON + Prometheus adapter); dashboard renders usage overall, by category/dimension, by person.
 
 ## Prerequisites & Risks
 

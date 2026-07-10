@@ -1,0 +1,7 @@
+# Scalar values partition the skills — group the dashboard by them.
+category: plan
+author: sarah
+
+# List values are sets — filter by them, never group by them.
+tags: [experimental]
+invokes: [grill-me]
