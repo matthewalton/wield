@@ -1,0 +1,12 @@
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "REPLACE_ME: e.g. https://otlp-gateway-<region>.grafana.net/otlp",
+    "OTEL_EXPORTER_OTLP_HEADERS": "REPLACE_ME: e.g. Authorization=Basic <base64 of instanceID:write-token>",
+    "OTEL_RESOURCE_ATTRIBUTES": "team.id=REPLACE_ME",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative"
+  }
+}

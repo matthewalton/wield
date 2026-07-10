@@ -10,7 +10,7 @@
   meta.yaml
 ```
 
-Its **presence opts the skill into enriched tracking**. Skills without one are still usage-tracked by telemetry (every invocation emits `claude_code.skill_activated` with `skill.name`); they just carry no dimensions to group by.
+Its **presence opts the skill into enriched tracking**. Skills without one are still usage-tracked by telemetry (per-skill `skill.name` on cost/token metrics — verified live 2026-07-10; `skill_activated` events also fire but mask custom skill names to `custom_skill`, see `otel/README.md`); they just carry no dimensions to group by.
 
 ## Rules
 

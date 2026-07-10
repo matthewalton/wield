@@ -18,7 +18,7 @@ Our team has no picture of which Claude Code skills people actually use, where i
 ## Components
 
 1. **Sidecar format `meta.yaml`** (#85): spec + committed example — **done 2026-07-10**, see [`FORMAT.md`](FORMAT.md) and [`examples/ticket-planner`](../examples/ticket-planner). Open key→value map (string / list-of-string values), no required or reserved keys; conventional: `category`, `author`, plus `invokes` and `forked_from` earmarked for future tooling. Vocabulary drift handled by an optional lint / optional vocab file — flexible by default, strict by choice.
-2. **Telemetry pipeline** (#80 — now the core ticket): Claude Code OTEL via managed settings → team collector → backend. Skill events with per-user attribution.
+2. **Telemetry pipeline** (#80 — now the core ticket): Claude Code OTEL via managed settings → OTLP backend (direct export, no collector for Phase 1 — see [ADR-0001](adr/0001-otlp-backend.md)). Skill events with per-user attribution.
 3. **Dashboard + join** (#79): scanner exports the skill→metadata map from the repo; dashboard renders usage overall, by category/dimension, by person.
 
 ## Prerequisites & Risks

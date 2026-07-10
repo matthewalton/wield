@@ -24,7 +24,7 @@ A value of the `category` dimension — where a skill fits in the team's chosen 
 _Avoid_: stage (as a format concept — fine as a team's own category values), phase, column
 
 **Usage**:
-Skill invocations observed via Claude Code OTEL telemetry (`claude_code.skill_activated` events, keyed by `skill.name`, attributed per user). Covers all skills, tracked or not.
+Skill activity observed via Claude Code OTEL telemetry, keyed by `skill.name` on cost/token **metrics** (verbatim for our skills) and attributed per user. The `skill_activated` events add invocation-trigger detail but mask custom skill names, so metrics are the join source (see `otel/README.md`). Covers all skills, tracked or not.
 _Avoid_: adoption, activity
 
 **Scanner**:
