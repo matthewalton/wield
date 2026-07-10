@@ -43,4 +43,4 @@ Free-form values can drift (`plan` vs `planning`), which fragments dashboard gro
 
 ## How it's consumed
 
-The **scanner** walks `.claude/skills/*/meta.yaml` and exports the **metadata map** (skill name → dimensions). The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
+The **scanner** walks `.claude/skills/*/meta.yaml` in one or more roots and exports the merged **metadata map** (skill name → dimensions) — where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.

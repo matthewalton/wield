@@ -35,6 +35,7 @@ We want to enable Claude Code's built-in OpenTelemetry monitoring for the team, 
 - Whether email (vs opaque user id) is needed on metrics, or whether the dashboard can map ids → names locally. Less PII in the backend is an easy win if the join still works.
 - Data retention: propose a default (e.g. 90 days) and confirm nobody needs longer.
 - Who signs off — is team-level agreement enough, or does org/IT need to approve managed settings deployment?
+- **Long-term direction, be upfront now:** the project's north star is cross-team skill sharing (Baton #86). Per-person telemetry — cost, usage, attribution — would **never** leave the team under any version of that; the only thing that could ever be shared outward is skill metadata plus aggregated/anonymized adoption signals, and that would be a separate opt-in conversation. Saying this now avoids the consent feeling like a bait-and-switch later.
 - **Possible future ask, be upfront now:** Claude Code masks custom skill names on invocation events unless `OTEL_LOG_TOOL_DETAILS=1` is set — a switch that also exports tool parameters (commands, file paths). If per-skill invocation events turn out to be needed, the team would have to consent to that separately, ideally with a filtering collector stripping tool parameters before storage. Metrics-based tracking (the current plan) does not need it.
 
 ## Decision log

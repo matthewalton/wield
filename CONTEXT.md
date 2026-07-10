@@ -28,11 +28,14 @@ Skill activity observed via Claude Code OTEL telemetry, keyed by `skill.name` on
 _Avoid_: adoption, activity
 
 **Scanner**:
-The tool that walks `.claude/skills/*/meta.yaml` in a repo and exports the metadata map.
+The tool that walks `.claude/skills/*/meta.yaml` in one or more roots and exports the metadata map. Layout-agnostic: a monorepo is the single-root case, not a special case.
 
 **Metadata map**:
-The scanner's output: skill name → dimensions. The dashboard joins it against usage on `skill.name`.
+The scanner's output, merged across roots: skill name → dimensions. The dashboard joins it against usage on `skill.name`.
 _Avoid_: index, catalogue
+
+**Adapter**:
+A source that turns some agent's activity into usage events matching the ingest contract (`docs/CONTRACT.md`). Claude Code OTEL is adapter #1 — the platform depends on the contract's shapes, never on Claude specifics.
 
 **Dashboard**:
 The visualization joining usage with the metadata map: most-used skills, usage per category, per person.
