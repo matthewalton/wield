@@ -20,7 +20,14 @@ One observation of a skill being used:
 
 ## Metadata map
 
-Skill name → dimensions (string or list-of-string values per [FORMAT.md](FORMAT.md)). Produced by the scanner walking **one or more roots** for `.claude/skills/*/meta.yaml` and merging the results — the tracker has no opinion on repo layout (monorepo, dedicated skills repo, plugin repo); it only requires that skills carry sidecars where they live.
+Skill name → dimensions (string or list-of-string values per [FORMAT.md](FORMAT.md)). Like the usage event, this shape is a **source-agnostic boundary** ([ADR-0003](adr/0003-frontmatter-metadata.md)): consumers depend on the map, never on who produced it.
+
+- **Repo scanner** (source #1, the only one built): walks **one or more roots** of `.claude/skills/*/`, reading frontmatter `metadata` fields and `meta.yaml` sidecar overrides, and merges the results — the tracker has no opinion on repo layout (monorepo, dedicated skills repo, plugin repo).
+- **Future sources** (none built): a CMS adapter for teams that manage skill metadata elsewhere (Baton #98), or app-side tagging as an addition. Any source must key entries by the exact `skill.name` telemetry reports (the `SKILL.md` frontmatter name), or the join finds nothing.
+
+## Evidence snapshot (future)
+
+When the registry (Baton #86) is built, a third shape joins this contract: the **published snapshot** — a skill's identity, dimensions, and team-level evidence aggregates. Its principles are already fixed in [ADR-0004](adr/0004-published-aggregates.md): push not pull, team-level aggregates only, never per-person data. The shape itself is specified when the registry is.
 
 ## Adapters
 
