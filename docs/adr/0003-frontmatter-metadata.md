@@ -1,6 +1,6 @@
 # ADR-0003: Dimensions live in SKILL.md frontmatter; the metadata map is a pluggable contract
 
-**Status:** accepted (2026-07-11) — supersedes the metadata-home part of ADR-0002; the query-time join itself is untouched
+**Status:** accepted (2026-07-11) — supersedes the metadata-home part of ADR-0002; the query-time join itself is untouched. Decision 2 (the sidecar override) was later removed by [ADR-0005](0005-drop-sidecar.md).
 **Tickets:** Baton #85 (format), #94 (delivery), #96 (scanner change)
 
 ## Context

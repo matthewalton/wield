@@ -7,12 +7,8 @@ Tracks which Claude Code skills a team actually uses and where in their developm
 **Skill**:
 A Claude Code skill folder (`SKILL.md` plus assets) living in a project's `.claude/skills/`. This project's tooling never writes to or moves skills — humans add tracking metadata to their own skills' frontmatter; the tools only read.
 
-**Sidecar**:
-The optional `meta.yaml` file inside a skill folder, next to `SKILL.md`. Since 2026-07-11 (ADR-0003) it is the _override_ for skills whose frontmatter can't be edited (plugin-provided, vendored) — dimensions normally live in frontmatter. When both exist, the sidecar wins wholesale and the scanner warns.
-_Avoid_: manifest, config
-
 **Tracked skill**:
-A skill that carries dimensions — in its `SKILL.md` frontmatter `metadata` field (the normal case) or a sidecar (unowned skills). Untracked skills still appear in usage totals — they just carry no dimensions.
+A skill that carries dimensions in its `SKILL.md` frontmatter `metadata` field — the only place dimensions live (ADR-0005). Untracked skills still appear in usage totals — they just carry no dimensions.
 _Avoid_: registered skill, catalogued skill
 
 **Dimension**:
@@ -34,7 +30,7 @@ Skill activity observed via Claude Code OTEL telemetry, keyed by `skill.name` on
 _Avoid_: adoption, activity
 
 **Scanner**:
-The tool (`src/scanner/scan.ts`) that walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and sidecars — and exports the metadata map. A stateless pure function: files in, map out; it stores nothing and touches no network. Layout-agnostic: a monorepo is the single-root case, not a special case. Delivery (getting its output into a metrics store) is CI's job, not the scanner's.
+The tool (`src/scanner/scan.ts`) that walks `.claude/skills/*/` in one or more roots — reading each skill's frontmatter `metadata` — and exports the metadata map. A stateless pure function: files in, map out; it stores nothing and touches no network. Layout-agnostic: a monorepo is the single-root case, not a special case. Delivery (getting its output into a metrics store) is CI's job, not the scanner's.
 
 **Metadata map**:
 The contract every downstream consumer depends on: skill name → dimensions. The dashboard joins it against usage on `skill.name`. The JSON form is the durable artifact; the Prometheus info-metric form is a Phase 1 adapter on top of it. Producers are pluggable (ADR-0003): the scanner is metadata source #1; a CMS adapter or app-side tagging may later emit the same shape.
@@ -77,4 +73,4 @@ A named composition of skills a team says belongs together (`workflows: [pr-flow
 **Dev:** It's really both plan and review. Can I put both?
 **Expert:** Not on `category` — it's a grouping dimension, so a skill in two categories gets counted in both and the chart stops adding up. Pick the one you'd want it filed under, and put the rest in a set dimension like `tags` if you want to find it that way.
 **Dev:** Should I give `grill-me` dimensions while I'm at it?
-**Expert:** Only if the team wants it grouped somewhere. It's category-agnostic, so leaving it untracked is a legitimate choice, not an omission. And if it were a plugin skill you can't edit, that's the one case for a `meta.yaml` sidecar instead of frontmatter.
+**Expert:** Only if the team wants it grouped somewhere. It's category-agnostic, so leaving it untracked is a legitimate choice, not an omission. Same for a plugin skill you can't edit — it stays untracked unless you fork it.

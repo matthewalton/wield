@@ -1,9 +1,8 @@
 /**
  * The scanner: walks `.claude/skills/*` in one or more roots, reads dimensions
- * from each skill's homes — the `metadata` field in SKILL.md frontmatter
- * (primary) or the `meta.yaml` sidecar (override) — and merges them into the
- * metadata map (docs/CONTRACT.md). Layout-agnostic — a monorepo is the
- * single-root case, not a special case.
+ * from the `metadata` field in each skill's SKILL.md frontmatter, and merges
+ * them into the metadata map (docs/CONTRACT.md). Layout-agnostic — a monorepo
+ * is the single-root case, not a special case.
  */
 
 import { readdir, readFile } from "node:fs/promises";
@@ -84,38 +83,6 @@ function skillName(
   return declared;
 }
 
-async function readSidecar(
-  file: string,
-  folder: string,
-  frontmatter: Frontmatter | null,
-  diagnostics: Diagnostic[],
-): Promise<{ name: string; dimensions: Dimensions } | null> {
-  let raw: unknown;
-  try {
-    raw = parse(await readFile(file, "utf8"));
-  } catch (err) {
-    diagnostics.push({
-      level: "error",
-      file,
-      message: `could not parse YAML: ${(err as Error).message}`,
-    });
-    return null;
-  }
-
-  const { dimensions, diagnostics: problems } = validateDimensions(raw, file);
-  diagnostics.push(...problems);
-
-  if (frontmatter === null) {
-    diagnostics.push({
-      level: "warn",
-      file,
-      message: `no SKILL.md beside this sidecar — falling back to the folder name "${folder}", which may not be what telemetry reports`,
-    });
-    return { name: folder, dimensions };
-  }
-  return { name: skillName(frontmatter, folder, file, diagnostics), dimensions };
-}
-
 const sameDimensions = (a: Dimensions, b: Dimensions): boolean =>
   JSON.stringify(Object.entries(a).sort()) === JSON.stringify(Object.entries(b).sort());
 
@@ -140,45 +107,22 @@ export async function scan(roots: string[]): Promise<ScanResult> {
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
-      const folder = join(skillsDir, entry.name);
-      const sidecar = join(folder, "meta.yaml");
-      const skillMd = join(folder, "SKILL.md");
+      const skillMd = join(skillsDir, entry.name, "SKILL.md");
 
       const frontmatter = await readFrontmatter(skillMd);
-      const hasSidecar = await readFile(sidecar).then(
-        () => true,
-        () => false,
+
+      // No metadata field means an untracked skill: still used, just carrying
+      // no dimensions. A legitimate choice, not an omission.
+      if (!frontmatter?.hasMetadata) continue;
+
+      const { dimensions, diagnostics: problems } = validateDimensions(
+        frontmatter.metadata,
+        skillMd,
       );
+      diagnostics.push(...problems);
+      const result = { name: skillName(frontmatter, entry.name, skillMd, diagnostics), dimensions };
 
-      // Neither home present means an untracked skill: still used, just
-      // carrying no dimensions. A legitimate choice, not an omission.
-      if (!hasSidecar && !frontmatter?.hasMetadata) continue;
-
-      let result: { name: string; dimensions: Dimensions } | null;
-      let from: string;
-      if (hasSidecar) {
-        if (frontmatter?.hasMetadata) {
-          diagnostics.push({
-            level: "warn",
-            file: sidecar,
-            message: `this sidecar overrides the frontmatter metadata in ${skillMd} wholesale — remove one of the two homes`,
-          });
-        }
-        result = await readSidecar(sidecar, entry.name, frontmatter, diagnostics);
-        from = sidecar;
-      } else {
-        const { dimensions, diagnostics: problems } = validateDimensions(
-          frontmatter!.metadata,
-          skillMd,
-          "frontmatter metadata",
-        );
-        diagnostics.push(...problems);
-        result = { name: skillName(frontmatter!, entry.name, skillMd, diagnostics), dimensions };
-        from = skillMd;
-      }
-      if (result === null) continue;
-
-      const source = relative(process.cwd(), from);
+      const source = relative(process.cwd(), skillMd);
       const existing = skills[result.name];
       if (existing) {
         // Telemetry only gives us `skill.name`, so two skills sharing one name

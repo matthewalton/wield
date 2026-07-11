@@ -5,65 +5,39 @@ key: SCAN
 # Scanner
 
 The scanner walks one or more roots for `.claude/skills/*/` skill folders, reads
-dimensions from each skill's homes — the `metadata` field in `SKILL.md`
-frontmatter (primary) and the `meta.yaml` sidecar (override, for unowned skills)
-— validates them, and exports the metadata map as JSON (the durable artifact) or
-as Prometheus info metrics (the Phase 1 adapter). Frontmatter-primary is
-FORMAT.md v2 (ADR-0003). Vocabulary is the repo glossary
+dimensions from the `metadata` field in each skill's `SKILL.md` frontmatter —
+the only place dimensions live (FORMAT.md v3, ADR-0005) — validates them, and
+exports the metadata map as JSON (the durable artifact) or as Prometheus info
+metrics (the Phase 1 adapter). Vocabulary is the repo glossary
 ([CONTEXT.md](../../CONTEXT.md)); feature-local terms and decisions are in
 [CONTEXT.md](CONTEXT.md) beside this spec.
 
 ### The walk and merge
 
-## [SCAN-1] A skill folder with a meta.yaml sidecar enters the metadata map
-
-Presence opts a skill in. The sidecar is the override home — it exists for
-skills whose `SKILL.md` cannot be edited without forking (plugin-provided,
-vendored) — but nothing checks ownership: a sidecar alone is a valid opt-in.
-
-## [SCAN-2] An empty sidecar makes a skill tracked with no dimensions
-
-An empty file parses to `null`; so does one containing only comments. Both yield
-an entry with `{}` dimensions and no diagnostics.
-
 ## [SCAN-33] A metadata field in SKILL.md frontmatter opts its skill into the metadata map
 
-The primary home (FORMAT.md v2): tracking a skill you own is three lines in the
-file you were already writing, no second file to remember. A `SKILL.md` whose
-frontmatter block is missing or fails to parse simply has no readable `metadata`
-— the skill is untracked without a diagnostic, matching SCAN-3's stance that
-malformed frontmatter is Claude Code's problem.
+Tracking a skill is three lines in the file you were already writing, no second
+file to remember. A `SKILL.md` whose frontmatter block is missing or fails to
+parse simply has no readable `metadata` — the skill is untracked without a
+diagnostic, matching SCAN-3's stance that malformed frontmatter is Claude
+Code's problem.
 
 ## [SCAN-34] An empty metadata field makes a skill tracked with no dimensions
 
 `metadata:` with no value parses to `null`, and `metadata: {}` to an empty map.
-Presence opts in, exactly as an empty sidecar does (SCAN-2): an entry with `{}`
-dimensions and no diagnostics.
+Presence opts in: an entry with `{}` dimensions and no diagnostics.
 
-## [SCAN-35] A skill folder with neither frontmatter metadata nor a sidecar is skipped without a diagnostic
+## [SCAN-35] A skill folder without frontmatter metadata is skipped without a diagnostic
 
 Untracked is a legitimate choice, not an omission. This includes a folder with
 no `SKILL.md` at all, and a `SKILL.md` whose frontmatter has no `metadata` key.
-
-## [SCAN-36] The sidecar's dimensions replace frontmatter metadata wholesale with a warning when both exist
-
-No per-key merging: a frontmatter key absent from the sidecar is gone from the
-entry. Two homes half-defining a skill would make "where is this value set?"
-unanswerable; the warning names both files so the redundant frontmatter can be
-cleaned up or the sidecar deleted.
 
 ## [SCAN-3] A skill's map key is the name declared in SKILL.md frontmatter
 
 That is what Claude Code reports as `skill.name` in telemetry; keying by folder
 would join against nothing. When the declared name differs from the folder name,
-the declared name is used and a warning says so. A SKILL.md without a frontmatter
-block — or with one that fails to parse — falls back to the folder name silently
-(deliberate: malformed frontmatter is Claude Code's problem, not the scanner's).
-
-## [SCAN-4] A sidecar with no SKILL.md beside it falls back to the folder name and warns
-
-The folder name may not be what telemetry reports, so the warning flags the
-fallback.
+the declared name is used and a warning says so. A frontmatter block that
+declares no usable `name` falls back to the folder name silently.
 
 ## [SCAN-5] The first definition wins when one skill name appears twice with different dimensions
 
@@ -79,19 +53,12 @@ The same skill vendored into two roots is normal, not a conflict.
 
 Scanning continues with the remaining roots.
 
-## [SCAN-8] A sidecar that fails to parse drops its skill with an error, leaving other skills in the map
-
-One broken file must not cost the rest of the repo its map.
-
 ### Dimension validation
-
-One set of value rules, applied to whichever home the dimensions came from —
-frontmatter `metadata` and sidecar validate identically.
 
 ## [SCAN-9] String and list-of-string dimension values are kept verbatim
 
 A string is a grouping dimension, a list of strings a set dimension
-(docs/FORMAT.md). Same rule in both homes.
+(docs/FORMAT.md).
 
 ## [SCAN-10] A dimension value that is neither a string nor a list of strings is dropped with an error naming the key
 
@@ -103,11 +70,11 @@ dropped — the home's valid keys survive.
 The error names the first bad member's type; there is no partial keep of the
 good members.
 
-## [SCAN-12] A dimensions home that is not a map yields one error and no dimensions
+## [SCAN-12] A metadata field that is not a map yields one error and no dimensions
 
-A sidecar containing a bare list or string, or a frontmatter `metadata` value
-that is one. The error describes what was found instead (`a list`, `a string`,
-…). The skill still enters the map, tracked with no dimensions.
+A frontmatter `metadata` value that is a bare list or string. The error
+describes what was found instead (`a list`, `a string`, …). The skill still
+enters the map, tracked with no dimensions.
 
 ## [SCAN-13] Unknown dimension keys are kept without diagnostics
 

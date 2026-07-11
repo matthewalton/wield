@@ -1,12 +1,12 @@
 # Skill dimensions — the tracking metadata format
 
-**Status:** v2 (2026-07-11) — dimensions moved into `SKILL.md` frontmatter, sidecar demoted to override ([ADR-0003](adr/0003-frontmatter-metadata.md)). v1 (sidecar-primary) was 2026-07-10.
+**Status:** v3 (2026-07-11) — the `meta.yaml` sidecar removed; frontmatter is the only home ([ADR-0005](adr/0005-drop-sidecar.md)). v2 (frontmatter-primary, sidecar override, [ADR-0003](adr/0003-frontmatter-metadata.md)) was earlier the same day; v1 (sidecar-primary) was 2026-07-10.
 
 Dimensions are team-defined key→value metadata on a skill, used to slice usage on the dashboard. **Having dimensions opts the skill into enriched tracking.** Skills without them are still usage-tracked by telemetry (per-skill `skill.name` on cost/token metrics — verified live 2026-07-10; `skill_activated` events also fire but mask custom skill names to `custom_skill`, see `otel/README.md`); they just carry no dimensions to group by.
 
 ## Where dimensions live
 
-**Primary: the `metadata` field in `SKILL.md` frontmatter** — an official Agent Skills spec field for exactly this ("additional properties not defined by the spec"; clients ignore it, and frontmatter never enters the model's prompt):
+Dimensions live in one place: **the `metadata` field in `SKILL.md` frontmatter** — an official Agent Skills spec field for exactly this ("additional properties not defined by the spec"; clients ignore it, and frontmatter never enters the model's prompt):
 
 ```yaml
 ---
@@ -19,20 +19,12 @@ metadata:
 ---
 ```
 
-**Override: a `meta.yaml` sidecar** next to `SKILL.md`, for skills whose frontmatter you can't edit (plugin-provided or vendored skills you'd otherwise have to fork). Same keys, same rules, no `metadata:` wrapper:
-
-```
-.claude/skills/ticket-planner/
-  SKILL.md
-  meta.yaml     # only for unowned skills
-```
-
-**Precedence:** when both exist, the sidecar wins wholesale (no per-key merging) and the scanner warns.
+A skill whose frontmatter you can't edit (plugin-provided, vendored) simply stays untracked unless you fork it — it still shows up in raw usage ([ADR-0005](adr/0005-drop-sidecar.md)).
 
 ## Rules
 
 1. Dimensions form an open key → value map. **No keys are required.**
-2. Every value must be a **string or a list of strings**. Nested maps, numbers, and booleans are invalid. (The Agent Skills spec types `metadata` values as strings; lists are our deliberate extension — safe because clients ignore `metadata` content, and the sidecar remains the escape hatch if one ever objects.)
+2. Every value must be a **string or a list of strings**. Nested maps, numbers, and booleans are invalid. (The Agent Skills spec types `metadata` values as strings; lists are our deliberate extension — safe because clients ignore `metadata` content. If a client ever enforces string-only values, we decide a fallback then — see [ADR-0005](adr/0005-drop-sidecar.md).)
 3. Keys are **dimensions**: team-defined vocabulary. The format reserves nothing; the conventions below are suggestions.
 4. Tooling never _writes_ to `SKILL.md` — humans put dimensions in frontmatter; our tools only read skill files.
 5. Unknown keys are never errors. Consumers ignore what they don't understand.
@@ -69,7 +61,7 @@ Free-form values can drift (`plan` vs `planning`), which fragments dashboard gro
 
 ## How it's consumed
 
-The **scanner** (`src/scanner/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and any sidecars — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
+The **scanner** (`src/scanner/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading each skill's frontmatter `metadata` — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
 
 ```console
 $ node src/scanner/cli.ts --root examples/repo               # the metadata map, as JSON

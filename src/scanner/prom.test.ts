@@ -9,7 +9,7 @@ const mapOf = (skills: Record<string, Record<string, string | string[]>>): Metad
   skills: Object.fromEntries(
     Object.entries(skills).map(([name, dimensions]) => [
       name,
-      { name, dimensions, source: `${name}/meta.yaml` },
+      { name, dimensions, source: `${name}/SKILL.md` },
     ]),
   ),
 });

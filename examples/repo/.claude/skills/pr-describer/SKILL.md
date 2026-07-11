@@ -16,6 +16,5 @@ Given the current branch, produce a pull request description:
 3. Note anything the diff touches that reviewers historically comment on.
 4. End with a test plan derived from what the change actually exercises.
 
-(This is an example skill demonstrating frontmatter-tracked dimensions — the
-`metadata` field above is the primary home; no sidecar needed. Compare
-`ticket-planner`, which shows the sidecar override for unowned skills.)
+(This is an example skill demonstrating tracked dimensions — the `metadata`
+field above, per docs/FORMAT.md.)

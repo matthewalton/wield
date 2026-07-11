@@ -32,24 +32,23 @@ function run(
 
 const parseMap = (text: string): MetadataMap => JSON.parse(text) as MetadataMap;
 
-/** Build a throwaway root containing `.claude/skills/<folder>/…`. */
-async function root(skills: Record<string, { meta?: string; skillMd?: string }>): Promise<string> {
+/** Build a throwaway root containing `.claude/skills/<folder>/SKILL.md`. */
+async function root(skills: Record<string, string>): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), "wield-"));
-  for (const [folder, files] of Object.entries(skills)) {
+  for (const [folder, skillMd] of Object.entries(skills)) {
     const skillDir = join(dir, ".claude", "skills", folder);
     await mkdir(skillDir, { recursive: true });
-    if (files.meta !== undefined) await writeFile(join(skillDir, "meta.yaml"), files.meta);
-    if (files.skillMd !== undefined) await writeFile(join(skillDir, "SKILL.md"), files.skillMd);
+    await writeFile(join(skillDir, "SKILL.md"), skillMd);
   }
   return dir;
 }
 
-const frontmatter = (name: string) => `---\nname: ${name}\ndescription: x\n---\n\n# ${name}\n`;
+/** SKILL.md whose frontmatter carries a `metadata` block (raw YAML, indented). */
+const tracked = (name: string, metadata = "") =>
+  `---\nname: ${name}\ndescription: x\nmetadata:\n${metadata}---\n\n# ${name}\n`;
 
 test("[SCAN-24] prints the metadata map as pretty JSON with a trailing newline by default", async () => {
-  const dir = await root({
-    planner: { meta: "category: plan\n", skillMd: frontmatter("planner") },
-  });
+  const dir = await root({ planner: tracked("planner", "  category: plan\n") });
   const { code, stdout } = await run(["--root", dir]);
   assert.equal(code, 0);
   const map = parseMap(stdout);
@@ -59,9 +58,7 @@ test("[SCAN-24] prints the metadata map as pretty JSON with a trailing newline b
 });
 
 test("[SCAN-25] --format prom prints info metrics, with rendering diagnostics on stderr", async () => {
-  const dir = await root({
-    planner: { meta: "forked-from: grill-me\n", skillMd: frontmatter("planner") },
-  });
+  const dir = await root({ planner: tracked("planner", "  forked-from: grill-me\n") });
   const { code, stdout, stderr } = await run(["--root", dir, "--format", "prom"]);
   assert.equal(code, 0);
   assert.ok(stdout.startsWith("# HELP skill_meta"));
@@ -83,11 +80,12 @@ test("[SCAN-27] diagnostics are written to stderr as level: file: message lines"
 });
 
 test("[SCAN-28] an error diagnostic makes the exit code 1, with the map still written first", async () => {
-  const dir = await root({ broken: { meta: "category: [plan\n", skillMd: frontmatter("broken") } });
+  const dir = await root({ broken: tracked("broken", "  cost: 3\n") });
   const { code, stdout, stderr } = await run(["--root", dir]);
   assert.equal(code, 1);
   assert.match(stderr, /^error: /m);
-  assert.deepEqual(parseMap(stdout).skills, {});
+  // The bad key is dropped, not the skill: a partial map plus a failing exit.
+  assert.deepEqual(parseMap(stdout).skills.broken!.dimensions, {});
 });
 
 test("[SCAN-29] --strict turns warnings alone into a failing exit", async () => {
@@ -97,7 +95,7 @@ test("[SCAN-29] --strict turns warnings alone into a failing exit", async () => 
 });
 
 test("[SCAN-30] --out writes the output to a file, keeping diagnostics on stderr", async () => {
-  const dir = await root({ planner: { meta: "", skillMd: frontmatter("planner") } });
+  const dir = await root({ planner: tracked("planner") });
   const noSkills = await mkdtemp(join(tmpdir(), "wield-"));
   const out = join(noSkills, "map.json");
   const { stdout, stderr } = await run(["--root", dir, "--root", noSkills, "--out", out]);
@@ -115,8 +113,8 @@ test("[SCAN-31] --help prints usage and exits 0", async () => {
 });
 
 test("[SCAN-32] the cwd is the default root, and --root replaces it rather than adding", async () => {
-  const home = await root({ local: { meta: "", skillMd: frontmatter("local") } });
-  const other = await root({ remote: { meta: "", skillMd: frontmatter("remote") } });
+  const home = await root({ local: tracked("local") });
+  const other = await root({ remote: tracked("remote") });
 
   const byDefault = parseMap((await run([], home)).stdout);
   assert.deepEqual(Object.keys(byDefault.skills), ["local"]);
