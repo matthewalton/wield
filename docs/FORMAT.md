@@ -69,11 +69,11 @@ Free-form values can drift (`plan` vs `planning`), which fragments dashboard gro
 
 ## How it's consumed
 
-The **scanner** (`src/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and any sidecars (frontmatter support in progress, Baton #96) — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
+The **scanner** (`src/scanner/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and any sidecars (frontmatter support in progress, Baton #96) — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
 
 ```console
-$ node src/cli.ts --root examples/repo               # the metadata map, as JSON
-$ node src/cli.ts --root examples/repo --format prom # Phase 1 Grafana adapter
+$ node src/scanner/cli.ts --root examples/repo               # the metadata map, as JSON
+$ node src/scanner/cli.ts --root examples/repo --format prom # Phase 1 Grafana adapter
 ```
 
 The map is a **contract, not a scanner detail**: anything that emits the same shape keyed by real `skill.name`s is a legitimate metadata source ([ADR-0003](adr/0003-frontmatter-metadata.md) — e.g. a CMS adapter, or app-side tagging later). The scanner is source #1, the one every team with a git repo already has.

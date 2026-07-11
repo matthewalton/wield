@@ -13,6 +13,16 @@ development lifecycle. TypeScript run directly by Node (no build step), npm, Nod
   design choice.
 - **Commits**: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
+## Speccle
+
+Wield is developed under the Speccle convention. Each feature is a named folder
+(`src/<feature>/`) holding its code, its tests, a `SPEC.md` of ratified acceptance
+criteria, and a `CONTEXT.md` of feature-local terms and decisions. A test claims a
+criterion by carrying its `[KEY-n]` token in the full test name. New behaviour goes
+through the Speccle skills — `implement-feature` for greenfield, `carve-feature` to
+govern existing code, `strengthen` to measure how well tests defend a slice — and
+`speccle-oracle lint <feature-folder>` must stay clean.
+
 ## Commands
 
 ```sh

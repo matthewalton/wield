@@ -8,11 +8,11 @@
     "node": ">=22.18"
   },
   "bin": {
-    "wield": "./src/cli.ts"
+    "wield": "./src/scanner/cli.ts"
   },
   "scripts": {
-    "scan": "node src/cli.ts",
-    "test": "node --test 'src/*.test.ts'",
+    "scan": "node src/scanner/cli.ts",
+    "test": "node --test 'src/**/*.test.ts'",
     "typecheck": "tsc",
     "lint": "eslint .",
     "format": "prettier --write .",

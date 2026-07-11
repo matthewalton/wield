@@ -19,7 +19,7 @@ async function root(skills: Record<string, { meta?: string; skillMd?: string }>)
 
 const frontmatter = (name: string) => `---\nname: ${name}\ndescription: x\n---\n\n# ${name}\n`;
 
-test("picks up sidecars and skips skills without one", async () => {
+test("[SCAN-1] picks up sidecars and skips skills without one", async () => {
   const dir = await root({
     "ticket-planner": {
       meta: "category: plan\nauthor: sarah\n",
@@ -34,13 +34,13 @@ test("picks up sidecars and skips skills without one", async () => {
   assert.equal(diagnostics.length, 0);
 });
 
-test("an empty sidecar makes a skill tracked with no dimensions", async () => {
+test("[SCAN-2] an empty sidecar makes a skill tracked with no dimensions", async () => {
   const dir = await root({ bare: { meta: "", skillMd: frontmatter("bare") } });
   const { map } = await scan([dir]);
   assert.deepEqual(map.skills.bare!.dimensions, {});
 });
 
-test("the join key comes from SKILL.md, not the folder name", async () => {
+test("[SCAN-3] the join key comes from SKILL.md, not the folder name", async () => {
   // Telemetry reports the declared name; joining on the folder would match nothing.
   const dir = await root({
     "ticket-planner": { meta: "category: plan\n", skillMd: frontmatter("plan-tickets") },
@@ -52,14 +52,14 @@ test("the join key comes from SKILL.md, not the folder name", async () => {
   assert.match(diagnostics[0]!.message, /declares name "plan-tickets" but the folder is/);
 });
 
-test("falls back to the folder name when SKILL.md is missing, and warns", async () => {
+test("[SCAN-4] falls back to the folder name when SKILL.md is missing, and warns", async () => {
   const dir = await root({ orphan: { meta: "category: plan\n" } });
   const { map, diagnostics } = await scan([dir]);
   assert.deepEqual(Object.keys(map.skills), ["orphan"]);
   assert.match(diagnostics[0]!.message, /no SKILL.md beside this sidecar/);
 });
 
-test("merges roots, and warns when one name has conflicting dimensions", async () => {
+test("[SCAN-5] merges roots, and warns when one name has conflicting dimensions", async () => {
   const a = await root({ shared: { meta: "category: plan\n", skillMd: frontmatter("shared") } });
   const b = await root({ shared: { meta: "category: review\n", skillMd: frontmatter("shared") } });
 
@@ -69,7 +69,7 @@ test("merges roots, and warns when one name has conflicting dimensions", async (
   assert.match(diagnostics[0]!.message, /usage cannot be attributed between them/);
 });
 
-test("an identical skill in two roots is not a conflict", async () => {
+test("[SCAN-6] an identical skill in two roots is not a conflict", async () => {
   const meta = "category: plan\n";
   const a = await root({ shared: { meta, skillMd: frontmatter("shared") } });
   const b = await root({ shared: { meta, skillMd: frontmatter("shared") } });
@@ -78,14 +78,14 @@ test("an identical skill in two roots is not a conflict", async () => {
   assert.equal(diagnostics.length, 0);
 });
 
-test("a root with no skills directory warns rather than failing", async () => {
+test("[SCAN-7] a root with no skills directory warns rather than failing", async () => {
   const dir = await mkdtemp(join(tmpdir(), "wield-"));
   const { map, diagnostics } = await scan([dir]);
   assert.deepEqual(map.skills, {});
   assert.match(diagnostics[0]!.message, /no skills directory/);
 });
 
-test("malformed YAML is reported without losing the other skills", async () => {
+test("[SCAN-8] malformed YAML is reported without losing the other skills", async () => {
   const dir = await root({
     broken: { meta: "category: [plan\n", skillMd: frontmatter("broken") },
     fine: { meta: "category: review\n", skillMd: frontmatter("fine") },
