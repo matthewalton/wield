@@ -9,7 +9,7 @@ This whole leg is Phase 1 scaffolding: the product path (app-side join reading t
 
 ## Secrets
 
-Configured as GitHub Actions secrets; when absent the workflow still renders and uploads the artifact, and skips the push with a notice.
+Configured as GitHub Actions secrets; when absent the workflow still renders and uploads the artifact, and skips the push with a notice. Copy [`.env.sample`](../.env.sample) to `.env` (gitignored), fill it in, and load with `gh secret set -f .env`.
 
 | Secret                       | Value (Grafana Cloud)                                                                               |
 | ---------------------------- | --------------------------------------------------------------------------------------------------- |
