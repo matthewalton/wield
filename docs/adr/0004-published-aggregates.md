@@ -16,7 +16,7 @@ This is decided now — years before the registry is built — because it shapes
 
 **Raw and per-person telemetry never leave the team's own metrics store. The only data that crosses a team boundary is a team-level aggregate, published by explicit action.**
 
-The team's app deployment computes evidence summaries from the same query-time join it already performs for the team's own dashboard, and *publishing* pushes a snapshot of selected summaries to the registry. Nothing is ever fetched out of a team's infrastructure from outside.
+The team's app deployment computes evidence summaries from the same query-time join it already performs for the team's own dashboard, and _publishing_ pushes a snapshot of selected summaries to the registry. Nothing is ever fetched out of a team's infrastructure from outside.
 
 A published skill snapshot has a uniform shape (a future contract document, sibling of [CONTRACT.md](../CONTRACT.md)):
 
@@ -35,6 +35,6 @@ Any "selective pull" design ends up requiring a team-side component that compute
 
 ## Consequences
 
-- The consent position strengthens: per-person data is for the team's own learning, stays in the team's own store, and structurally *cannot* be published — not merely "won't be".
+- The consent position strengthens: per-person data is for the team's own learning, stays in the team's own store, and structurally _cannot_ be published — not merely "won't be".
 - The app's join layer should keep its aggregate outputs well-shaped, since "publish" is later just serialization of what the dashboard already computes. No extra Phase 1/2 work.
 - The registry (Baton #86) stores published snapshots and metadata — it is a deposit box for claims with receipts, not a place telemetry migrates to. Cross-team vocabulary mapping (one team's `category: implement` vs another's `stage: build`) becomes a registry-side concern when the time comes.

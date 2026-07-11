@@ -34,17 +34,17 @@ metadata:
 1. Dimensions form an open key → value map. **No keys are required.**
 2. Every value must be a **string or a list of strings**. Nested maps, numbers, and booleans are invalid. (The Agent Skills spec types `metadata` values as strings; lists are our deliberate extension — safe because clients ignore `metadata` content, and the sidecar remains the escape hatch if one ever objects.)
 3. Keys are **dimensions**: team-defined vocabulary. The format reserves nothing; the conventions below are suggestions.
-4. Tooling never *writes* to `SKILL.md` — humans put dimensions in frontmatter; our tools only read skill files.
+4. Tooling never _writes_ to `SKILL.md` — humans put dimensions in frontmatter; our tools only read skill files.
 5. Unknown keys are never errors. Consumers ignore what they don't understand.
 
 ## The shape of a value decides how it can be used
 
 This is the one rule worth internalising, and it applies to **every key** — the format still reserves none.
 
-| Shape | Is a | The dashboard can |
-|---|---|---|
-| **Scalar** — `category: plan` | partition | **group** by it. Every skill lands in exactly one bucket, so the buckets sum to the total. |
-| **List** — `tags: [experimental, slow]` | set | **filter** by it. A skill can be in many buckets at once, so grouping would double-count. |
+| Shape                                   | Is a      | The dashboard can                                                                          |
+| --------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| **Scalar** — `category: plan`           | partition | **group** by it. Every skill lands in exactly one bucket, so the buckets sum to the total. |
+| **List** — `tags: [experimental, slow]` | set       | **filter** by it. A skill can be in many buckets at once, so grouping would double-count.  |
 
 Reach for a list only when a skill genuinely belongs to several values at once. If every skill has exactly one value for a key, make it scalar and you get a chart you can group by. This is why `category` is a scalar: `category: [plan, review]` is not a skill in a "plan and review" bucket, it's a skill counted twice.
 
@@ -52,14 +52,14 @@ The dashboard mechanics that follow from this — and why a list can't simply be
 
 ## Conventional keys
 
-| Key | Shape | Meaning |
-|---|---|---|
-| `category` | scalar | Where the skill fits in the team's chosen taxonomy. Lifecycle stages (`spec`, `plan`, `implement`, `test`, `review`) are one common scheme — the format doesn't care which you pick. Agnostic skills omit it. |
-| `author` | scalar | Who wrote/owns the skill. |
-| `tags` | list | Free-form set membership: `experimental`, `slow`, `needs-review`. The catch-all for anything a skill can be several of. |
-| `workflows` | list | Named skill compositions this skill belongs to (e.g. `pr-flow`) — filter to see a whole workflow's usage per step. Ordered workflow docs are future tooling (Baton #97). |
-| `invokes` | list | Other skills this one invokes (documented intent; reserved for future tooling). |
-| `forked_from` | scalar | Provenance, if adapted from another skill (reserved for future tooling). |
+| Key           | Shape  | Meaning                                                                                                                                                                                                       |
+| ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `category`    | scalar | Where the skill fits in the team's chosen taxonomy. Lifecycle stages (`spec`, `plan`, `implement`, `test`, `review`) are one common scheme — the format doesn't care which you pick. Agnostic skills omit it. |
+| `author`      | scalar | Who wrote/owns the skill.                                                                                                                                                                                     |
+| `tags`        | list   | Free-form set membership: `experimental`, `slow`, `needs-review`. The catch-all for anything a skill can be several of.                                                                                       |
+| `workflows`   | list   | Named skill compositions this skill belongs to (e.g. `pr-flow`) — filter to see a whole workflow's usage per step. Ordered workflow docs are future tooling (Baton #97).                                      |
+| `invokes`     | list   | Other skills this one invokes (documented intent; reserved for future tooling).                                                                                                                               |
+| `forked_from` | scalar | Provenance, if adapted from another skill (reserved for future tooling).                                                                                                                                      |
 
 The skill's name — the key everything joins on — is the `name` in `SKILL.md` frontmatter, because that is what Claude Code reports as `skill.name` in telemetry. The scanner warns when it disagrees with the folder name.
 

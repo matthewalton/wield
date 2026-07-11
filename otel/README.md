@@ -17,10 +17,10 @@ Verified against [the monitoring docs](https://code.claude.com/docs/en/monitorin
 
 `skill.name` is masked differently on events vs metrics; this was confirmed empirically (a personal skill arrived as `custom_skill`) and then in the docs fine print:
 
-| Signal | Built-in / bundled / official marketplace | User-defined (incl. our skills) | Third-party plugin |
-|---|---|---|---|
-| `skill_activated` events | verbatim | **`"custom_skill"`** unless `OTEL_LOG_TOOL_DETAILS=1` | `"custom_skill"` (same rule) |
-| cost/token metrics | verbatim | **verbatim — verified live 2026-07-10** | `"third-party"` |
+| Signal                   | Built-in / bundled / official marketplace | User-defined (incl. our skills)                       | Third-party plugin           |
+| ------------------------ | ----------------------------------------- | ----------------------------------------------------- | ---------------------------- |
+| `skill_activated` events | verbatim                                  | **`"custom_skill"`** unless `OTEL_LOG_TOOL_DETAILS=1` | `"custom_skill"` (same rule) |
+| cost/token metrics       | verbatim                                  | **verbatim — verified live 2026-07-10**               | `"third-party"`              |
 
 Implications for the dashboard join:
 
@@ -40,10 +40,10 @@ Prompt content, code, and tool inputs/outputs are excluded by default. The opt-i
 
 Fill in the two `REPLACE_ME` values (backend endpoint + auth header; see ADR-0001), then place the file at:
 
-| OS | Path |
-|---|---|
-| macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` |
-| Linux | `/etc/claude-code/managed-settings.json` |
+| OS      | Path                                                                            |
+| ------- | ------------------------------------------------------------------------------- |
+| macOS   | `/Library/Application Support/ClaudeCode/managed-settings.json`                 |
+| Linux   | `/etc/claude-code/managed-settings.json`                                        |
 | Windows | see docs — the exact path is not consistently documented; verify before rollout |
 
 > The docs don't publish a complete per-OS path matrix — re-verify against the [settings docs](https://code.claude.com/docs/en/settings) at deploy time.

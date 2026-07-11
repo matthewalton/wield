@@ -8,11 +8,11 @@
  *   node src/cli.ts --strict                 # warnings become a failing exit
  */
 
-import { parseArgs } from 'node:util';
-import { writeFile } from 'node:fs/promises';
-import type { Diagnostic } from './format.ts';
-import { renderInfoMetrics } from './prom.ts';
-import { scan } from './scan.ts';
+import { parseArgs } from "node:util";
+import { writeFile } from "node:fs/promises";
+import type { Diagnostic } from "./format.ts";
+import { renderInfoMetrics } from "./prom.ts";
+import { scan } from "./scan.ts";
 
 const USAGE = `wield scan — export the skill metadata map
 
@@ -26,11 +26,11 @@ Options:
 
 const { values } = parseArgs({
   options: {
-    root: { type: 'string', multiple: true, default: [] },
-    format: { type: 'string', default: 'json' },
-    out: { type: 'string' },
-    strict: { type: 'boolean', default: false },
-    help: { type: 'boolean', default: false },
+    root: { type: "string", multiple: true, default: [] },
+    format: { type: "string", default: "json" },
+    out: { type: "string" },
+    strict: { type: "boolean", default: false },
+    help: { type: "boolean", default: false },
   },
 });
 
@@ -39,16 +39,16 @@ if (values.help) {
   process.exit(0);
 }
 
-if (values.format !== 'json' && values.format !== 'prom') {
+if (values.format !== "json" && values.format !== "prom") {
   process.stderr.write(`unknown --format "${values.format}": expected json or prom\n`);
   process.exit(2);
 }
 
-const roots = values.root!.length > 0 ? values.root! : [process.cwd()];
+const roots = values.root.length > 0 ? values.root : [process.cwd()];
 const { map, diagnostics } = await scan(roots);
 
 let output: string;
-if (values.format === 'prom') {
+if (values.format === "prom") {
   const rendered = renderInfoMetrics(map);
   diagnostics.push(...rendered.diagnostics);
   output = rendered.text;
@@ -62,6 +62,6 @@ diagnostics.forEach(report);
 if (values.out) await writeFile(values.out, output);
 else process.stdout.write(output);
 
-const errors = diagnostics.filter((d) => d.level === 'error').length;
+const errors = diagnostics.filter((d) => d.level === "error").length;
 const warnings = diagnostics.length - errors;
 if (errors > 0 || (values.strict && warnings > 0)) process.exit(1);

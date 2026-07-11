@@ -8,7 +8,7 @@ Tracks which Claude Code skills a team actually uses and where in their developm
 A Claude Code skill folder (`SKILL.md` plus assets) living in a project's `.claude/skills/`. This project's tooling never writes to or moves skills — humans add tracking metadata to their own skills' frontmatter; the tools only read.
 
 **Sidecar**:
-The optional `meta.yaml` file inside a skill folder, next to `SKILL.md`. Since 2026-07-11 (ADR-0003) it is the *override* for skills whose frontmatter can't be edited (plugin-provided, vendored) — dimensions normally live in frontmatter. When both exist, the sidecar wins wholesale and the scanner warns.
+The optional `meta.yaml` file inside a skill folder, next to `SKILL.md`. Since 2026-07-11 (ADR-0003) it is the _override_ for skills whose frontmatter can't be edited (plugin-provided, vendored) — dimensions normally live in frontmatter. When both exist, the sidecar wins wholesale and the scanner warns.
 _Avoid_: manifest, config
 
 **Tracked skill**:
@@ -61,7 +61,7 @@ The uniform unit a team publishes to the registry: a skill's identity, its dimen
 _Avoid_: report, export
 
 **Declared workflow**:
-A named composition of skills a team says belongs together (`workflows: [pr-flow]` set dimension; ordered docs are future tooling, Baton #97). Distinct from *observed* workflows inferred from telemetry, which are out of reach while events mask custom skill names.
+A named composition of skills a team says belongs together (`workflows: [pr-flow]` set dimension; ordered docs are future tooling, Baton #97). Distinct from _observed_ workflows inferred from telemetry, which are out of reach while events mask custom skill names.
 
 ## Flagged ambiguities
 

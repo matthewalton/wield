@@ -22,21 +22,21 @@
  *         and on(skill_name) skill_tag{key="tags", value="experimental"}
  */
 
-import { type Diagnostic, type MetadataMap, isScalar } from './format.ts';
+import { type Diagnostic, type MetadataMap, isScalar } from "./format.ts";
 
 const VALID_LABEL = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-const RESERVED = new Set(['skill_name', 'key', 'value']);
+const RESERVED = new Set(["skill_name", "key", "value"]);
 
 const escapeValue = (v: string): string =>
-  v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+  v.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 
 const sanitizeLabelName = (key: string): string => {
-  const cleaned = key.replace(/[^a-zA-Z0-9_]/g, '_');
+  const cleaned = key.replace(/[^a-zA-Z0-9_]/g, "_");
   return VALID_LABEL.test(cleaned) ? cleaned : `_${cleaned}`;
 };
 
 const labels = (pairs: [string, string][]): string =>
-  pairs.map(([k, v]) => `${k}="${escapeValue(v)}"`).join(',');
+  pairs.map(([k, v]) => `${k}="${escapeValue(v)}"`).join(",");
 
 export function renderInfoMetrics(map: MetadataMap): {
   text: string;
@@ -58,7 +58,7 @@ export function renderInfoMetrics(map: MetadataMap): {
       if (isScalar(value)) {
         if (usedLabels.has(label)) {
           diagnostics.push({
-            level: 'warn',
+            level: "warn",
             file: source,
             message: `dimension "${key}" collides with another dimension after sanitizing to "${label}" — omitted from skill_meta`,
           });
@@ -66,7 +66,7 @@ export function renderInfoMetrics(map: MetadataMap): {
         }
         if (RESERVED.has(label)) {
           diagnostics.push({
-            level: 'warn',
+            level: "warn",
             file: source,
             message: `dimension "${key}" collides with the reserved label "${label}" — omitted from skill_meta`,
           });
@@ -74,7 +74,7 @@ export function renderInfoMetrics(map: MetadataMap): {
         }
         if (label !== key) {
           diagnostics.push({
-            level: 'warn',
+            level: "warn",
             file: source,
             message: `dimension "${key}" is not a valid Prometheus label name — exported as "${label}"`,
           });
@@ -89,9 +89,9 @@ export function renderInfoMetrics(map: MetadataMap): {
       for (const member of value) {
         tagLines.push(
           `skill_tag{${labels([
-            ['skill_name', name],
-            ['key', key],
-            ['value', member],
+            ["skill_name", name],
+            ["key", key],
+            ["value", member],
           ])}} 1`,
         );
       }
@@ -99,21 +99,21 @@ export function renderInfoMetrics(map: MetadataMap): {
 
     // Always emit a skill_meta series, even with no scalars: it guarantees one
     // row per skill for `group_left` and makes tracked skills discoverable.
-    metaLines.push(`skill_meta{${labels([['skill_name', name], ...scalars])}} 1`);
+    metaLines.push(`skill_meta{${labels([["skill_name", name], ...scalars])}} 1`);
   }
 
   const out: string[] = [
-    '# HELP skill_meta Scalar dimensions of a tracked skill. One series per skill; safe to group by.',
-    '# TYPE skill_meta gauge',
+    "# HELP skill_meta Scalar dimensions of a tracked skill. One series per skill; safe to group by.",
+    "# TYPE skill_meta gauge",
     ...metaLines,
   ];
   if (tagLines.length > 0) {
     out.push(
-      '# HELP skill_tag Set-valued dimensions of a tracked skill. Many series per skill; filter with `and on(skill_name)`, do not group by.',
-      '# TYPE skill_tag gauge',
+      "# HELP skill_tag Set-valued dimensions of a tracked skill. Many series per skill; filter with `and on(skill_name)`, do not group by.",
+      "# TYPE skill_tag gauge",
       ...tagLines,
     );
   }
 
-  return { text: `${out.join('\n')}\n`, diagnostics };
+  return { text: `${out.join("\n")}\n`, diagnostics };
 }

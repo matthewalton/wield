@@ -4,19 +4,19 @@
 
 The north star (Baton #86) spans agents, not just Claude Code. To keep that door open without building anything now, everything downstream of ingest — backend, join, dashboard — depends only on the two shapes below, never on who produced them.
 
-**Claude Code is the first adapter, not the platform.** Every design decision gets tested against: *does this leak Claude-isms past the adapter boundary?*
+**Claude Code is the first adapter, not the platform.** Every design decision gets tested against: _does this leak Claude-isms past the adapter boundary?_
 
 ## Usage event
 
 One observation of a skill being used:
 
-| Field | Required | Notes |
-|---|---|---|
-| `skill_name` | yes | Join key against the metadata map. |
-| `user` | yes | Per-person attribution (id or email — see the [consent draft](consent.md)). |
-| `timestamp` | yes | |
-| `cost`, `tokens` | no | Enrichment; only some sources have it. Absence is not an error. |
-| `source` | no | Which agent/adapter emitted the event (e.g. `claude-code-otel`). |
+| Field            | Required | Notes                                                                       |
+| ---------------- | -------- | --------------------------------------------------------------------------- |
+| `skill_name`     | yes      | Join key against the metadata map.                                          |
+| `user`           | yes      | Per-person attribution (id or email — see the [consent draft](consent.md)). |
+| `timestamp`      | yes      |                                                                             |
+| `cost`, `tokens` | no       | Enrichment; only some sources have it. Absence is not an error.             |
+| `source`         | no       | Which agent/adapter emitted the event (e.g. `claude-code-otel`).            |
 
 ## Metadata map
 

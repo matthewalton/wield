@@ -15,7 +15,7 @@ Volume is small — one team's CLI usage; tens of sessions/day, far below any fr
 
 ## Why
 
-- **Handles both signals natively.** The free tier ingests OTLP metrics (→ Mimir) and logs (→ Loki) through one gateway endpoint — one endpoint, one credential in managed settings. Honeycomb is event/trace-first; OTLP metrics support is plan-gated, and our core join needs metrics *and* events.
+- **Handles both signals natively.** The free tier ingests OTLP metrics (→ Mimir) and logs (→ Loki) through one gateway endpoint — one endpoint, one credential in managed settings. Honeycomb is event/trace-first; OTLP metrics support is plan-gated, and our core join needs metrics _and_ events.
 - **Nobody has to run anything.** A self-hosted collector + Prometheus/Loki gives full control but makes "who owns it" a real ops job — unjustified before the tracking proves demand (same logic as the distribution descope).
 - **Free tier fits.** ~10k active metric series / 50 GB logs per month, 14-day log retention; our volume is a rounding error. Metric retention (13 months) covers trend views.
 - **Dashboard story is flexible.** #79 can start as Grafana dashboards (zero extra infra) and graduate to a custom app querying the Prometheus/Loki HTTP APIs when the metadata-map join needs real code.

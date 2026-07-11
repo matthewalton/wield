@@ -5,9 +5,9 @@ Track which Claude Code skills your team actually uses, and where in your develo
 Skills are authored and invoked exactly as normal. This project adds:
 
 - **[Dimensions](docs/FORMAT.md)** — optional team-defined metadata (e.g. category, author, tags) in a skill's `SKILL.md` frontmatter (the spec's `metadata` field), opting it into enriched tracking. A `meta.yaml` sidecar covers skills you can't edit (plugins). See [`examples/repo`](examples/repo).
-- **Telemetry** — Claude Code's native OTEL cost/token metrics carry `skill.name`, capturing per-skill, per-person usage for *all* skills, dimensions or not.
+- **Telemetry** — Claude Code's native OTEL cost/token metrics carry `skill.name`, capturing per-skill, per-person usage for _all_ skills, dimensions or not.
 - **Scanner** — a stateless CLI that walks one or more roots and exports the metadata map the dashboard joins against; CI runs it on merge and delivers the result to the metrics store.
-- **Dashboard** *(planned)* — joins usage with the metadata map: most-used skills, usage per category, per person.
+- **Dashboard** _(planned)_ — joins usage with the metadata map: most-used skills, usage per category, per person.
 
 ```console
 $ node src/cli.ts --root examples/repo               # the metadata map, as JSON

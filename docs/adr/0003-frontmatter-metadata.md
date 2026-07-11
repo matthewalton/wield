@@ -29,15 +29,15 @@ metadata:
 
 One file, no sidecar to forget: adding tracking to a skill is three lines in the file you were already writing. All FORMAT.md rules carry over unchanged — open key→value map, nothing required, scalar groups / list filters.
 
-**Verified 2026-07-11:** the Agent Skills spec (agentskills.io/specification) documents `metadata` as an *official* frontmatter field for exactly this — "additional properties not defined by the spec", ignored by clients. Claude Code injects only `name` and `description` into model context; frontmatter never enters prompts, so dimensions add zero prompt weight. This falsifies ADR-0002's premise for rejecting frontmatter ("mixes tracking data into a prompt-bearing file") — the tracking data never reaches the prompt.
+**Verified 2026-07-11:** the Agent Skills spec (agentskills.io/specification) documents `metadata` as an _official_ frontmatter field for exactly this — "additional properties not defined by the spec", ignored by clients. Claude Code injects only `name` and `description` into model context; frontmatter never enters prompts, so dimensions add zero prompt weight. This falsifies ADR-0002's premise for rejecting frontmatter ("mixes tracking data into a prompt-bearing file") — the tracking data never reaches the prompt.
 
-*Caveat:* the spec types `metadata` values as string→string. Our list-valued dimensions (`tags: [a, b]`) are a deliberate extension — safe today because clients ignore `metadata` content entirely and our scanner is the only consumer. If a client ever enforces strict string-only values, the sidecar remains the escape hatch.
+_Caveat:_ the spec types `metadata` values as string→string. Our list-valued dimensions (`tags: [a, b]`) are a deliberate extension — safe today because clients ignore `metadata` content entirely and our scanner is the only consumer. If a client ever enforces strict string-only values, the sidecar remains the escape hatch.
 
 ### 2. The sidecar `meta.yaml` demotes to an override for unowned skills
 
 Plugin-provided or vendored skills can't have their frontmatter edited without forking. For those, `meta.yaml` next to the skill (or where the team materializes it) still works. **Precedence: when both exist, the sidecar wins wholesale and the scanner warns** — no per-key merging.
 
-FORMAT.md rule 4 ("tooling never edits `SKILL.md`") survives with sharpened meaning: *humans* write dimensions into frontmatter; our tooling only ever **reads** skill files.
+FORMAT.md rule 4 ("tooling never edits `SKILL.md`") survives with sharpened meaning: _humans_ write dimensions into frontmatter; our tooling only ever **reads** skill files.
 
 ### 3. The metadata map is the contract; producers are pluggable
 

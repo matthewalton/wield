@@ -4,23 +4,23 @@
  * monorepo is the single-root case, not a special case.
  */
 
-import { readdir, readFile } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
-import { parse } from 'yaml';
+import { readdir, readFile } from "node:fs/promises";
+import { join, relative, resolve } from "node:path";
+import { parse } from "yaml";
 import {
   type Diagnostic,
   type Dimensions,
   type MetadataMap,
   type SkillEntry,
   validateDimensions,
-} from './format.ts';
+} from "./format.ts";
 
 export interface ScanResult {
   map: MetadataMap;
   diagnostics: Diagnostic[];
 }
 
-const SKILLS_DIR = join('.claude', 'skills');
+const SKILLS_DIR = join(".claude", "skills");
 
 /**
  * Claude Code takes a skill's name from its SKILL.md frontmatter, and that is
@@ -30,21 +30,21 @@ const SKILLS_DIR = join('.claude', 'skills');
 async function skillNameFrom(skillMd: string, fallback: string): Promise<string | null> {
   let text: string;
   try {
-    text = await readFile(skillMd, 'utf8');
+    text = await readFile(skillMd, "utf8");
   } catch {
     return null;
   }
 
   const lines = text.split(/\r?\n/);
-  if (lines[0]?.trim() !== '---') return fallback;
-  const end = lines.indexOf('---', 1);
+  if (lines[0]?.trim() !== "---") return fallback;
+  const end = lines.indexOf("---", 1);
   if (end === -1) return fallback;
 
   try {
-    const frontmatter = parse(lines.slice(1, end).join('\n')) as unknown;
-    if (frontmatter && typeof frontmatter === 'object' && !Array.isArray(frontmatter)) {
+    const frontmatter = parse(lines.slice(1, end).join("\n")) as unknown;
+    if (frontmatter && typeof frontmatter === "object" && !Array.isArray(frontmatter)) {
       const name = (frontmatter as Record<string, unknown>).name;
-      if (typeof name === 'string' && name.trim() !== '') return name.trim();
+      if (typeof name === "string" && name.trim() !== "") return name.trim();
     }
   } catch {
     // A malformed frontmatter block is Claude Code's problem, not ours.
@@ -60,10 +60,10 @@ async function readSidecar(
 ): Promise<{ name: string; dimensions: Dimensions } | null> {
   let raw: unknown;
   try {
-    raw = parse(await readFile(file, 'utf8'));
+    raw = parse(await readFile(file, "utf8"));
   } catch (err) {
     diagnostics.push({
-      level: 'error',
+      level: "error",
       file,
       message: `could not parse YAML: ${(err as Error).message}`,
     });
@@ -76,7 +76,7 @@ async function readSidecar(
   const declared = await skillNameFrom(skillMd, folder);
   if (declared === null) {
     diagnostics.push({
-      level: 'warn',
+      level: "warn",
       file,
       message: `no SKILL.md beside this sidecar — falling back to the folder name "${folder}", which may not be what telemetry reports`,
     });
@@ -84,7 +84,7 @@ async function readSidecar(
   }
   if (declared !== folder) {
     diagnostics.push({
-      level: 'warn',
+      level: "warn",
       file,
       message: `SKILL.md declares name "${declared}" but the folder is "${folder}" — using "${declared}", since that is what telemetry reports`,
     });
@@ -107,9 +107,9 @@ export async function scan(roots: string[]): Promise<ScanResult> {
       entries = await readdir(skillsDir, { withFileTypes: true });
     } catch {
       diagnostics.push({
-        level: 'warn',
+        level: "warn",
         file: skillsDir,
-        message: 'no skills directory here — nothing to scan in this root',
+        message: "no skills directory here — nothing to scan in this root",
       });
       continue;
     }
@@ -117,7 +117,7 @@ export async function scan(roots: string[]): Promise<ScanResult> {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const folder = join(skillsDir, entry.name);
-      const sidecar = join(folder, 'meta.yaml');
+      const sidecar = join(folder, "meta.yaml");
 
       // No sidecar means an untracked skill: still used, just carries no
       // dimensions. Its absence is a legitimate choice, not an omission.
@@ -127,7 +127,7 @@ export async function scan(roots: string[]): Promise<ScanResult> {
         continue;
       }
 
-      const result = await readSidecar(sidecar, entry.name, join(folder, 'SKILL.md'), diagnostics);
+      const result = await readSidecar(sidecar, entry.name, join(folder, "SKILL.md"), diagnostics);
       if (result === null) continue;
 
       const source = relative(process.cwd(), sidecar);
@@ -137,7 +137,7 @@ export async function scan(roots: string[]): Promise<ScanResult> {
         // are indistinguishable downstream. First root wins, deterministically.
         if (!sameDimensions(existing.dimensions, result.dimensions)) {
           diagnostics.push({
-            level: 'warn',
+            level: "warn",
             file: source,
             message: `"${result.name}" is already defined by ${existing.source} with different dimensions — usage cannot be attributed between them; keeping the first`,
           });

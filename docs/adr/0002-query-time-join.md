@@ -17,12 +17,12 @@ Telemetry carries only `skill.name`, user attribution, and cost/token numbers �
 ## Why not bake metadata into telemetry or the database
 
 - Claude Code's exporter is not extensible with custom attributes — there is no "bake it in" option at the source.
-- Info-metrics as a *permanent* home are a poor fit: they cannot hold list values (see below), and the freshness cron is operational cruft. Fine as scaffolding, wrong as foundation.
+- Info-metrics as a _permanent_ home are a poor fit: they cannot hold list values (see below), and the freshness cron is operational cruft. Fine as scaffolding, wrong as foundation.
 - App-side join keeps the repo the single source of truth and needs no push infrastructure.
 
 ## How list-valued dimensions are handled (amends FORMAT.md, 2026-07-10)
 
-A Prometheus label holds one string, so `category: [plan, review]` has no direct rendering. The original format let *any* key be a list, on the stated premise that this "keeps every key groupable". That premise was wrong, and the failure is not graceful: a `group_left` join requires the metadata side to have **exactly one series per `skill_name`**. Fan a skill out into two `skill_meta` series and PromQL raises *"many-to-one matching must be unique"* — the panel breaks for every skill, not just the multi-valued one.
+A Prometheus label holds one string, so `category: [plan, review]` has no direct rendering. The original format let _any_ key be a list, on the stated premise that this "keeps every key groupable". That premise was wrong, and the failure is not graceful: a `group_left` join requires the metadata side to have **exactly one series per `skill_name`**. Fan a skill out into two `skill_meta` series and PromQL raises _"many-to-one matching must be unique"_ — the panel breaks for every skill, not just the multi-valued one.
 
 The resolution is to let the **shape of the value declare its meaning**, for any key, reserving none:
 
@@ -35,7 +35,7 @@ Consequences: `category` becomes scalar, `tags` is the conventional list-valued 
 
 ## Alternatives considered
 
-**Metadata scheme** — sidecar `meta.yaml` reaffirmed over: frontmatter inside `SKILL.md` (mixes tracking data into a prompt-bearing file Claude Code parses), a central `skills.yaml` (drifts from folders, dies when a skill is copied), and app-DB tagging (breaks metadata-as-code; acceptable later as an *addition*, never a replacement).
+**Metadata scheme** — sidecar `meta.yaml` reaffirmed over: frontmatter inside `SKILL.md` (mixes tracking data into a prompt-bearing file Claude Code parses), a central `skills.yaml` (drifts from folders, dies when a skill is copied), and app-DB tagging (breaks metadata-as-code; acceptable later as an _addition_, never a replacement).
 
 **Usage signal** — a `PostToolUse` hook on the `Skill` tool (committed to project settings) is a viable alternative: real skill names with no masking, no managed-settings/sudo deployment, transparent in-repo tracking code. Costs: invocations only (no cost/tokens), per-repo coverage, DIY delivery plumbing. OTEL stays the choice (cost data is product surface; machine-wide coverage; officially supported), but **hooks are the documented fallback** if the metrics-side `skill.name` behavior ever breaks (see masking table in `otel/README.md`).
 

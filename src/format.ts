@@ -23,17 +23,17 @@ export interface MetadataMap {
 }
 
 export interface Diagnostic {
-  level: 'warn' | 'error';
+  level: "warn" | "error";
   file: string;
   message: string;
 }
 
-export const isScalar = (v: DimensionValue): v is string => typeof v === 'string';
+export const isScalar = (v: DimensionValue): v is string => typeof v === "string";
 export const isSet = (v: DimensionValue): v is string[] => Array.isArray(v);
 
 const describe = (v: unknown): string => {
-  if (v === null) return 'null';
-  if (Array.isArray(v)) return 'a list';
+  if (v === null) return "null";
+  if (Array.isArray(v)) return "a list";
   return `a ${typeof v}`;
 };
 
@@ -53,9 +53,9 @@ export function validateDimensions(
   // An empty sidecar parses to null. Its presence still opts the skill in.
   if (raw === null || raw === undefined) return { dimensions, diagnostics };
 
-  if (typeof raw !== 'object' || Array.isArray(raw)) {
+  if (typeof raw !== "object" || Array.isArray(raw)) {
     diagnostics.push({
-      level: 'error',
+      level: "error",
       file,
       message: `sidecar must be a key → value map, got ${describe(raw)}`,
     });
@@ -63,15 +63,15 @@ export function validateDimensions(
   }
 
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       dimensions[key] = value;
       continue;
     }
     if (Array.isArray(value)) {
-      const bad = value.filter((m) => typeof m !== 'string');
+      const bad = value.filter((m) => typeof m !== "string");
       if (bad.length > 0) {
         diagnostics.push({
-          level: 'error',
+          level: "error",
           file,
           message: `"${key}" is a list but contains ${describe(bad[0])} — every member must be a string; dropping the key`,
         });
@@ -81,7 +81,7 @@ export function validateDimensions(
       continue;
     }
     diagnostics.push({
-      level: 'error',
+      level: "error",
       file,
       message: `"${key}" is ${describe(value)} — values must be a string or a list of strings; dropping the key`,
     });

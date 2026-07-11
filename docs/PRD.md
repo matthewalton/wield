@@ -12,7 +12,7 @@ Our team has no picture of which Claude Code skills people actually use, where i
 
 - Skills live in the project's `.claude/skills/` folder (committed to the repo as today) and are invoked as normal.
 - **All** skill invocations are tracked via Claude Code OTEL telemetry — per skill, per person. No opt-in needed for raw usage.
-- A skill can *optionally* carry **dimensions** — team-defined metadata in its `SKILL.md` frontmatter (`metadata` field; a `meta.yaml` sidecar covers unowned skills) that opts it into enriched tracking. The conventional `category` key is taxonomy-agnostic — our team will likely use lifecycle values (`plan`, `implement`, `test`, `review`, …), other teams whatever they care about. Agnostic skills (e.g. grill-me) simply stay untagged.
+- A skill can _optionally_ carry **dimensions** — team-defined metadata in its `SKILL.md` frontmatter (`metadata` field; a `meta.yaml` sidecar covers unowned skills) that opts it into enriched tracking. The conventional `category` key is taxonomy-agnostic — our team will likely use lifecycle values (`plan`, `implement`, `test`, `review`, …), other teams whatever they care about. Agnostic skills (e.g. grill-me) simply stay untagged.
 - A **dashboard** joins telemetry (`skill.name`) with the scanned metadata map to answer: what's used most? what does each person use in each category? what should I try when planning?
 
 ## North Star
