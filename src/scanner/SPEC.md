@@ -4,27 +4,53 @@ key: SCAN
 
 # Scanner
 
-The scanner walks one or more roots for `.claude/skills/*/meta.yaml` sidecars,
-validates their dimensions, and exports the metadata map — as JSON (the durable
-artifact) or as Prometheus info metrics (the Phase 1 adapter). Vocabulary is the
-repo glossary ([CONTEXT.md](../../CONTEXT.md)); feature-local terms and decisions
-are in [CONTEXT.md](CONTEXT.md) beside this spec.
-
-This spec states observed behaviour only. In particular it documents the
-sidecar-only scanner that exists today — frontmatter `metadata` as the primary
-home for dimensions (FORMAT.md v2, Baton #96) is future work, not a criterion.
+The scanner walks one or more roots for `.claude/skills/*/` skill folders, reads
+dimensions from each skill's homes — the `metadata` field in `SKILL.md`
+frontmatter (primary) and the `meta.yaml` sidecar (override, for unowned skills)
+— validates them, and exports the metadata map as JSON (the durable artifact) or
+as Prometheus info metrics (the Phase 1 adapter). Frontmatter-primary is
+FORMAT.md v2 (ADR-0003). Vocabulary is the repo glossary
+([CONTEXT.md](../../CONTEXT.md)); feature-local terms and decisions are in
+[CONTEXT.md](CONTEXT.md) beside this spec.
 
 ### The walk and merge
 
-## [SCAN-1] Only skill folders with a meta.yaml sidecar enter the metadata map
+## [SCAN-1] A skill folder with a meta.yaml sidecar enters the metadata map
 
-Presence opts a skill in; a skill folder without a sidecar is skipped without a
-diagnostic. Untracked is a legitimate choice, not an omission.
+Presence opts a skill in. The sidecar is the override home — it exists for
+skills whose `SKILL.md` cannot be edited without forking (plugin-provided,
+vendored) — but nothing checks ownership: a sidecar alone is a valid opt-in.
 
 ## [SCAN-2] An empty sidecar makes a skill tracked with no dimensions
 
 An empty file parses to `null`; so does one containing only comments. Both yield
 an entry with `{}` dimensions and no diagnostics.
+
+## [SCAN-33] A metadata field in SKILL.md frontmatter opts its skill into the metadata map
+
+The primary home (FORMAT.md v2): tracking a skill you own is three lines in the
+file you were already writing, no second file to remember. A `SKILL.md` whose
+frontmatter block is missing or fails to parse simply has no readable `metadata`
+— the skill is untracked without a diagnostic, matching SCAN-3's stance that
+malformed frontmatter is Claude Code's problem.
+
+## [SCAN-34] An empty metadata field makes a skill tracked with no dimensions
+
+`metadata:` with no value parses to `null`, and `metadata: {}` to an empty map.
+Presence opts in, exactly as an empty sidecar does (SCAN-2): an entry with `{}`
+dimensions and no diagnostics.
+
+## [SCAN-35] A skill folder with neither frontmatter metadata nor a sidecar is skipped without a diagnostic
+
+Untracked is a legitimate choice, not an omission. This includes a folder with
+no `SKILL.md` at all, and a `SKILL.md` whose frontmatter has no `metadata` key.
+
+## [SCAN-36] The sidecar's dimensions replace frontmatter metadata wholesale with a warning when both exist
+
+No per-key merging: a frontmatter key absent from the sidecar is gone from the
+entry. Two homes half-defining a skill would make "where is this value set?"
+unanswerable; the warning names both files so the redundant frontmatter can be
+cleaned up or the sidecar deleted.
 
 ## [SCAN-3] A skill's map key is the name declared in SKILL.md frontmatter
 
@@ -57,29 +83,33 @@ Scanning continues with the remaining roots.
 
 One broken file must not cost the rest of the repo its map.
 
-### Sidecar validation
+### Dimension validation
 
-## [SCAN-9] String and list-of-string sidecar values are kept as dimensions verbatim
+One set of value rules, applied to whichever home the dimensions came from —
+frontmatter `metadata` and sidecar validate identically.
+
+## [SCAN-9] String and list-of-string dimension values are kept verbatim
 
 A string is a grouping dimension, a list of strings a set dimension
-(docs/FORMAT.md).
+(docs/FORMAT.md). Same rule in both homes.
 
-## [SCAN-10] A sidecar value that is neither a string nor a list of strings is dropped with an error naming the key
+## [SCAN-10] A dimension value that is neither a string nor a list of strings is dropped with an error naming the key
 
 Numbers, booleans, null, and nested maps are invalid. Only the offending key is
-dropped — the sidecar's valid keys survive.
+dropped — the home's valid keys survive.
 
 ## [SCAN-11] A list containing a non-string member drops the entire key
 
 The error names the first bad member's type; there is no partial keep of the
 good members.
 
-## [SCAN-12] A sidecar that is not a map yields one error and no dimensions
+## [SCAN-12] A dimensions home that is not a map yields one error and no dimensions
 
-The error describes what was found instead (`a list`, `a string`, …). The skill
-still enters the map, tracked with no dimensions.
+A sidecar containing a bare list or string, or a frontmatter `metadata` value
+that is one. The error describes what was found instead (`a list`, `a string`,
+…). The skill still enters the map, tracked with no dimensions.
 
-## [SCAN-13] Unknown sidecar keys are kept without diagnostics
+## [SCAN-13] Unknown dimension keys are kept without diagnostics
 
 The format reserves no keys; consumers ignore what they don't understand
 (docs/FORMAT.md rule 5).

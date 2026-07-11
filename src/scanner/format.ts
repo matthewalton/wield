@@ -1,5 +1,6 @@
 /**
- * The `meta.yaml` sidecar format. See docs/FORMAT.md.
+ * The dimensions format shared by both homes — frontmatter `metadata` and the
+ * `meta.yaml` sidecar. See docs/FORMAT.md.
  *
  * The shape of a value declares how the dashboard may use it:
  * a scalar is a partition (groupable), a list is a set (filterable).
@@ -12,7 +13,7 @@ export interface SkillEntry {
   /** The name telemetry reports on `skill.name` — the join key. */
   name: string;
   dimensions: Dimensions;
-  /** Path to the sidecar this entry came from. */
+  /** The file the dimensions came from: a sidecar, or SKILL.md for frontmatter-tracked skills. */
   source: string;
 }
 
@@ -38,26 +39,28 @@ const describe = (v: unknown): string => {
 };
 
 /**
- * Validate a parsed sidecar against FORMAT.md's rules. No keys are required and
- * unknown keys are never errors, so every failure here is about value *shape*.
- * Bad values are dropped rather than fatal: one malformed key must not cost a
- * skill its place in the map.
+ * Validate the content of a dimensions home against FORMAT.md's rules — the
+ * same rules whether it came from a sidecar or frontmatter `metadata`. No keys
+ * are required and unknown keys are never errors, so every failure here is
+ * about value *shape*. Bad values are dropped rather than fatal: one malformed
+ * key must not cost a skill its place in the map.
  */
 export function validateDimensions(
   raw: unknown,
   file: string,
+  home = "sidecar",
 ): { dimensions: Dimensions; diagnostics: Diagnostic[] } {
   const diagnostics: Diagnostic[] = [];
   const dimensions: Dimensions = {};
 
-  // An empty sidecar parses to null. Its presence still opts the skill in.
+  // An empty home parses to null. Its presence still opts the skill in.
   if (raw === null || raw === undefined) return { dimensions, diagnostics };
 
   if (typeof raw !== "object" || Array.isArray(raw)) {
     diagnostics.push({
       level: "error",
       file,
-      message: `sidecar must be a key → value map, got ${describe(raw)}`,
+      message: `${home} must be a key → value map, got ${describe(raw)}`,
     });
     return { dimensions, diagnostics };
   }

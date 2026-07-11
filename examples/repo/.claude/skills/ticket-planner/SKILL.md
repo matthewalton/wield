@@ -12,4 +12,7 @@ Given a ticket, produce an ordered implementation checklist:
 3. Break the work into steps small enough to verify independently.
 4. Call out risks and open questions at the end.
 
-(This is an example skill demonstrating the sidecar format — see `meta.yaml` alongside this file.)
+(This is an example skill demonstrating the sidecar override — see `meta.yaml`
+alongside this file, the home for skills whose frontmatter you can't edit.
+Compare `pr-describer`, which carries its dimensions in frontmatter `metadata`,
+the primary home.)

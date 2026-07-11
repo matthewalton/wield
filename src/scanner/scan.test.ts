@@ -19,6 +19,83 @@ async function root(skills: Record<string, { meta?: string; skillMd?: string }>)
 
 const frontmatter = (name: string) => `---\nname: ${name}\ndescription: x\n---\n\n# ${name}\n`;
 
+/** SKILL.md whose frontmatter carries a `metadata` block (raw YAML, indented). */
+const tracked = (name: string, metadata: string) =>
+  `---\nname: ${name}\ndescription: x\nmetadata:\n${metadata}---\n\n# ${name}\n`;
+
+test("[SCAN-33] frontmatter metadata opts a skill into the map", async () => {
+  const dir = await root({
+    "pr-reviewer": {
+      skillMd: tracked("pr-reviewer", "  category: review\n  tags: [experimental]\n"),
+    },
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.deepEqual(Object.keys(map.skills), ["pr-reviewer"]);
+  assert.deepEqual(map.skills["pr-reviewer"]!.dimensions, {
+    category: "review",
+    tags: ["experimental"],
+  });
+  assert.match(map.skills["pr-reviewer"]!.source, /SKILL\.md$/);
+  assert.equal(diagnostics.length, 0);
+});
+
+test("[SCAN-34] an empty metadata field makes a skill tracked with no dimensions", async () => {
+  const dir = await root({
+    // `metadata:` with no value parses to null; `metadata: {}` to an empty map.
+    bare: { skillMd: "---\nname: bare\ndescription: x\nmetadata:\n---\n\n# bare\n" },
+    braces: { skillMd: "---\nname: braces\ndescription: x\nmetadata: {}\n---\n\n# braces\n" },
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.deepEqual(map.skills.bare!.dimensions, {});
+  assert.deepEqual(map.skills.braces!.dimensions, {});
+  assert.equal(diagnostics.length, 0);
+});
+
+test("[SCAN-35] a skill with neither home is skipped without a diagnostic", async () => {
+  const dir = await root({
+    untracked: { skillMd: frontmatter("untracked") },
+    empty: {},
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.deepEqual(map.skills, {});
+  assert.equal(diagnostics.length, 0);
+});
+
+test("[SCAN-36] the sidecar replaces frontmatter metadata wholesale, with a warning", async () => {
+  const dir = await root({
+    both: {
+      meta: "category: review\n",
+      skillMd: tracked("both", "  category: plan\n  author: sarah\n"),
+    },
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  // No per-key merge: frontmatter's `author` is gone, not carried over.
+  assert.deepEqual(map.skills.both!.dimensions, { category: "review" });
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0]!.level, "warn");
+  assert.match(diagnostics[0]!.message, /overrides the frontmatter metadata/);
+  assert.match(diagnostics[0]!.message, /SKILL\.md/);
+});
+
+test("[SCAN-12] a non-map metadata field yields one error and a dimensionless entry", async () => {
+  const dir = await root({
+    odd: { skillMd: "---\nname: odd\ndescription: x\nmetadata: fast\n---\n\n# odd\n" },
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.deepEqual(map.skills.odd!.dimensions, {});
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0]!.level, "error");
+  assert.match(
+    diagnostics[0]!.message,
+    /frontmatter metadata must be a key → value map, got a string/,
+  );
+});
+
 test("[SCAN-1] picks up sidecars and skips skills without one", async () => {
   const dir = await root({
     "ticket-planner": {

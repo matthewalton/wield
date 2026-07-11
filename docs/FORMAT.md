@@ -69,7 +69,7 @@ Free-form values can drift (`plan` vs `planning`), which fragments dashboard gro
 
 ## How it's consumed
 
-The **scanner** (`src/scanner/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and any sidecars (frontmatter support in progress, Baton #96) — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
+The **scanner** (`src/scanner/scan.ts`) walks `.claude/skills/*/` in one or more roots — reading frontmatter `metadata` and any sidecars — and exports the merged **metadata map** (skill name → dimensions). Where the skills live (monorepo, dedicated repo, plugin repo) is the team's choice, not the format's. The **dashboard** joins that map against OTEL usage data on `skill.name` to render usage overall, per dimension value, and per person.
 
 ```console
 $ node src/scanner/cli.ts --root examples/repo               # the metadata map, as JSON

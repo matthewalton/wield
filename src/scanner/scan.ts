@@ -1,7 +1,9 @@
 /**
- * The scanner: walks one or more roots for `.claude/skills/*\/meta.yaml` and
- * merges them into the metadata map (docs/CONTRACT.md). Layout-agnostic — a
- * monorepo is the single-root case, not a special case.
+ * The scanner: walks `.claude/skills/*` in one or more roots, reads dimensions
+ * from each skill's homes — the `metadata` field in SKILL.md frontmatter
+ * (primary) or the `meta.yaml` sidecar (override) — and merges them into the
+ * metadata map (docs/CONTRACT.md). Layout-agnostic — a monorepo is the
+ * single-root case, not a special case.
  */
 
 import { readdir, readFile } from "node:fs/promises";
@@ -22,12 +24,22 @@ export interface ScanResult {
 
 const SKILLS_DIR = join(".claude", "skills");
 
-/**
- * Claude Code takes a skill's name from its SKILL.md frontmatter, and that is
- * what lands on `skill.name` in telemetry. The folder name is only a fallback:
- * if the two disagree, joining on the folder name silently matches nothing.
- */
-async function skillNameFrom(skillMd: string, fallback: string): Promise<string | null> {
+interface Frontmatter {
+  /**
+   * Claude Code takes a skill's name from its SKILL.md frontmatter, and that
+   * is what lands on `skill.name` in telemetry. Null when the frontmatter
+   * declares no usable name — the folder name is the fallback then.
+   */
+  name: string | null;
+  metadata: unknown;
+  /** Whether the `metadata` key exists at all — its bare presence opts in. */
+  hasMetadata: boolean;
+}
+
+const NO_FRONTMATTER: Frontmatter = { name: null, metadata: undefined, hasMetadata: false };
+
+/** Null means no SKILL.md; a malformed frontmatter block is Claude Code's problem, not ours. */
+async function readFrontmatter(skillMd: string): Promise<Frontmatter | null> {
   let text: string;
   try {
     text = await readFile(skillMd, "utf8");
@@ -36,26 +48,46 @@ async function skillNameFrom(skillMd: string, fallback: string): Promise<string 
   }
 
   const lines = text.split(/\r?\n/);
-  if (lines[0]?.trim() !== "---") return fallback;
+  if (lines[0]?.trim() !== "---") return NO_FRONTMATTER;
   const end = lines.indexOf("---", 1);
-  if (end === -1) return fallback;
+  if (end === -1) return NO_FRONTMATTER;
 
+  let parsed: unknown;
   try {
-    const frontmatter = parse(lines.slice(1, end).join("\n")) as unknown;
-    if (frontmatter && typeof frontmatter === "object" && !Array.isArray(frontmatter)) {
-      const name = (frontmatter as Record<string, unknown>).name;
-      if (typeof name === "string" && name.trim() !== "") return name.trim();
-    }
+    parsed = parse(lines.slice(1, end).join("\n"));
   } catch {
-    // A malformed frontmatter block is Claude Code's problem, not ours.
+    return NO_FRONTMATTER;
   }
-  return fallback;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return NO_FRONTMATTER;
+
+  const block = parsed as Record<string, unknown>;
+  const name =
+    typeof block.name === "string" && block.name.trim() !== "" ? block.name.trim() : null;
+  return { name, metadata: block.metadata, hasMetadata: "metadata" in block };
+}
+
+/** Resolve the map key from the declared name, warning when the folder disagrees. */
+function skillName(
+  frontmatter: Frontmatter,
+  folder: string,
+  file: string,
+  diagnostics: Diagnostic[],
+): string {
+  const declared = frontmatter.name ?? folder;
+  if (declared !== folder) {
+    diagnostics.push({
+      level: "warn",
+      file,
+      message: `SKILL.md declares name "${declared}" but the folder is "${folder}" — using "${declared}", since that is what telemetry reports`,
+    });
+  }
+  return declared;
 }
 
 async function readSidecar(
   file: string,
   folder: string,
-  skillMd: string,
+  frontmatter: Frontmatter | null,
   diagnostics: Diagnostic[],
 ): Promise<{ name: string; dimensions: Dimensions } | null> {
   let raw: unknown;
@@ -73,8 +105,7 @@ async function readSidecar(
   const { dimensions, diagnostics: problems } = validateDimensions(raw, file);
   diagnostics.push(...problems);
 
-  const declared = await skillNameFrom(skillMd, folder);
-  if (declared === null) {
+  if (frontmatter === null) {
     diagnostics.push({
       level: "warn",
       file,
@@ -82,14 +113,7 @@ async function readSidecar(
     });
     return { name: folder, dimensions };
   }
-  if (declared !== folder) {
-    diagnostics.push({
-      level: "warn",
-      file,
-      message: `SKILL.md declares name "${declared}" but the folder is "${folder}" — using "${declared}", since that is what telemetry reports`,
-    });
-  }
-  return { name: declared, dimensions };
+  return { name: skillName(frontmatter, folder, file, diagnostics), dimensions };
 }
 
 const sameDimensions = (a: Dimensions, b: Dimensions): boolean =>
@@ -118,19 +142,43 @@ export async function scan(roots: string[]): Promise<ScanResult> {
       if (!entry.isDirectory()) continue;
       const folder = join(skillsDir, entry.name);
       const sidecar = join(folder, "meta.yaml");
+      const skillMd = join(folder, "SKILL.md");
 
-      // No sidecar means an untracked skill: still used, just carries no
-      // dimensions. Its absence is a legitimate choice, not an omission.
-      try {
-        await readFile(sidecar);
-      } catch {
-        continue;
+      const frontmatter = await readFrontmatter(skillMd);
+      const hasSidecar = await readFile(sidecar).then(
+        () => true,
+        () => false,
+      );
+
+      // Neither home present means an untracked skill: still used, just
+      // carrying no dimensions. A legitimate choice, not an omission.
+      if (!hasSidecar && !frontmatter?.hasMetadata) continue;
+
+      let result: { name: string; dimensions: Dimensions } | null;
+      let from: string;
+      if (hasSidecar) {
+        if (frontmatter?.hasMetadata) {
+          diagnostics.push({
+            level: "warn",
+            file: sidecar,
+            message: `this sidecar overrides the frontmatter metadata in ${skillMd} wholesale — remove one of the two homes`,
+          });
+        }
+        result = await readSidecar(sidecar, entry.name, frontmatter, diagnostics);
+        from = sidecar;
+      } else {
+        const { dimensions, diagnostics: problems } = validateDimensions(
+          frontmatter!.metadata,
+          skillMd,
+          "frontmatter metadata",
+        );
+        diagnostics.push(...problems);
+        result = { name: skillName(frontmatter!, entry.name, skillMd, diagnostics), dimensions };
+        from = skillMd;
       }
-
-      const result = await readSidecar(sidecar, entry.name, join(folder, "SKILL.md"), diagnostics);
       if (result === null) continue;
 
-      const source = relative(process.cwd(), sidecar);
+      const source = relative(process.cwd(), from);
       const existing = skills[result.name];
       if (existing) {
         // Telemetry only gives us `skill.name`, so two skills sharing one name
