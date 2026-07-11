@@ -2,10 +2,10 @@
 /**
  * wield scan — export the metadata map from one or more roots.
  *
- *   node src/cli.ts                          # JSON map for the current repo
- *   node src/cli.ts --root . --root ../infra # merge several roots
- *   node src/cli.ts --format prom            # Prometheus info metrics
- *   node src/cli.ts --strict                 # warnings become a failing exit
+ *   node src/scanner/src/cli.ts                          # JSON map for the current repo
+ *   node src/scanner/src/cli.ts --root . --root ../infra # merge several roots
+ *   node src/scanner/src/cli.ts --format prom            # Prometheus info metrics
+ *   node src/scanner/src/cli.ts --strict                 # warnings become a failing exit
  */
 
 import { parseArgs } from "node:util";

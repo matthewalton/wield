@@ -33,20 +33,3 @@ with a warning.
 The `SKILL.md` path a map entry's dimensions came from, relative to the
 invocation's working directory. Used in diagnostics to say where a duplicate
 was first defined.
-
-## Decisions
-
-- **Presence opts in.** The existence of the `metadata` key — not its content —
-  makes a skill tracked. A bare `metadata:` key is a valid opt-in.
-- **Errors drop data; warnings never do.** Every `error` corresponds to
-  something excluded from the map or the rendering; a `warn` output is complete
-  and usable.
-- **First definition wins, deterministically.** Duplicate skill names are
-  indistinguishable in telemetry, so the scanner keeps the first and warns
-  rather than guessing or failing.
-- **One skill_meta row per skill is an invariant.** `group_left` fails on
-  duplicate right-hand rows, so scalars and sets render as different metrics
-  rather than different labels (ADR-0002).
-- **Exit codes: 0 clean, 1 diagnostics exceeded tolerance, 2 usage error.**
-  `--strict` lowers the tolerance to zero warnings; output is still written
-  before a failing exit.

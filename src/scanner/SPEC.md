@@ -9,8 +9,9 @@ dimensions from the `metadata` field in each skill's `SKILL.md` frontmatter —
 the only place dimensions live (FORMAT.md v3, ADR-0005) — validates them, and
 exports the metadata map as JSON (the durable artifact) or as Prometheus info
 metrics (the Phase 1 adapter). Vocabulary is the repo glossary
-([CONTEXT.md](../../CONTEXT.md)); feature-local terms and decisions are in
-[CONTEXT.md](CONTEXT.md) beside this spec.
+([CONTEXT.md](../../CONTEXT.md)); feature-local terms are in
+[CONTEXT.md](CONTEXT.md) beside this spec, and the slice's decisions in
+[decisions/](decisions/).
 
 ### The walk and merge
 
