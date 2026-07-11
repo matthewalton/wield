@@ -1,0 +1,92 @@
+# Delivers the scanner's metadata map to the metrics store (docs/delivery.md).
+# Runs here on merge to main plus a daily re-push, and is reusable from any
+# skills-bearing repo via workflow_call.
+name: Push skill metadata
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Daily re-push keeps the panels' last_over_time window small (docs/delivery.md).
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      roots:
+        description: Space-separated roots to scan for .claude/skills
+        type: string
+        required: true
+      wield-ref:
+        description: Git ref of matthewalton/wield to run the scanner from
+        type: string
+        default: main
+    secrets:
+      PROM_REMOTE_WRITE_URL:
+        required: false
+      PROM_REMOTE_WRITE_USERNAME:
+        required: false
+      PROM_REMOTE_WRITE_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: push-skill-metadata
+  cancel-in-progress: true
+
+jobs:
+  push-metadata:
+    runs-on: ubuntu-latest
+    env:
+      PROMETHEUS_VERSION: 3.5.0
+      ROOTS: ${{ inputs.roots || 'examples/repo' }}
+      REMOTE_WRITE_URL: ${{ secrets.PROM_REMOTE_WRITE_URL }}
+      REMOTE_WRITE_USERNAME: ${{ secrets.PROM_REMOTE_WRITE_USERNAME }}
+      REMOTE_WRITE_PASSWORD: ${{ secrets.PROM_REMOTE_WRITE_PASSWORD }}
+    steps:
+      - name: Check out the skills repo
+        uses: actions/checkout@v4
+
+      - name: Check out the scanner
+        uses: actions/checkout@v4
+        with:
+          repository: matthewalton/wield
+          ref: ${{ inputs.wield-ref || github.sha }}
+          path: .wield
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install scanner dependencies
+        run: npm ci --omit=dev --ignore-scripts
+        working-directory: .wield
+
+      - name: Scan
+        run: |
+          root_args=()
+          for root in $ROOTS; do root_args+=(--root "$root"); done
+          node .wield/src/scanner/src/cli.ts "${root_args[@]}" --format json --out skill-metadata.json
+          node .wield/src/scanner/src/cli.ts "${root_args[@]}" --format prom --out skill-metadata.prom
+          cat skill-metadata.prom
+
+      - name: Upload metadata map
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-metadata
+          path: |
+            skill-metadata.json
+            skill-metadata.prom
+
+      - name: Push info metrics to the metrics store
+        if: env.REMOTE_WRITE_URL != ''
+        run: |
+          curl -sSLO "https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          tar xzf "prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz" --strip-components=1 "prometheus-${PROMETHEUS_VERSION}.linux-amd64/promtool"
+          auth=$(printf '%s:%s' "$REMOTE_WRITE_USERNAME" "$REMOTE_WRITE_PASSWORD" | base64 -w0)
+          ./promtool push metrics --label=job=wield --header="Authorization=Basic $auth" "$REMOTE_WRITE_URL" skill-metadata.prom
+
+      - name: Note skipped push
+        if: env.REMOTE_WRITE_URL == ''
+        run: echo "::notice::PROM_REMOTE_WRITE_* secrets not configured — metadata map uploaded as artifact only, nothing pushed. See docs/delivery.md."
