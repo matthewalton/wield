@@ -7,7 +7,7 @@ Skills are authored and invoked exactly as normal. This project adds:
 - **[Dimensions](docs/FORMAT.md)** — optional team-defined metadata (e.g. category, author, tags) in a skill's `SKILL.md` frontmatter (the spec's `metadata` field), opting it into enriched tracking. See [`examples/repo`](examples/repo).
 - **Telemetry** — Claude Code's native OTEL cost/token metrics carry `skill.name`, capturing per-skill, per-person usage for _all_ skills, dimensions or not.
 - **Scanner** — a stateless CLI that walks one or more roots and exports the metadata map the dashboard joins against; [CI runs it on merge](docs/delivery.md) and delivers the result to the metrics store.
-- **[Dashboard](grafana/README.md)** — Grafana panels joining usage with the metadata map at query time: most-used skills, usage per category, per person, trend and cost.
+- **[Dashboard](ops/grafana/README.md)** — Grafana panels joining usage with the metadata map at query time: most-used skills, usage per category, per person, trend and cost.
 
 ```console
 $ npm run scan -- --root examples/repo               # the metadata map, as JSON

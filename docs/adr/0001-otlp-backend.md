@@ -30,7 +30,7 @@ Volume is small — one team's CLI usage; tens of sessions/day, far below any fr
 ## Open challenges to this decision (added 2026-07-10)
 
 - **Team already runs Grafana at work.** If it ingests OTLP, targeting it instead of a new free-tier org may be strictly better. Check with its owner.
-- **skill.name masking may force a collector after all.** Live testing showed `skill_activated` events mask user-defined skill names to `"custom_skill"`; the only unmask switch (`OTEL_LOG_TOOL_DETAILS=1`) also exports tool parameters. Direct export cannot strip those before storage — a small filtering collector could. Decision holds only if the metrics-side join (names verbatim on cost/token metrics per docs) proves sufficient; verify empirically. See `otel/README.md` masking table.
+- **skill.name masking may force a collector after all.** Live testing showed `skill_activated` events mask user-defined skill names to `"custom_skill"`; the only unmask switch (`OTEL_LOG_TOOL_DETAILS=1`) also exports tool parameters. Direct export cannot strip those before storage — a small filtering collector could. Decision holds only if the metrics-side join (names verbatim on cost/token metrics per docs) proves sufficient; verify empirically. See `ops/otel/README.md` masking table.
 
 ## Ownership
 

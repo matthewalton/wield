@@ -2,7 +2,7 @@
 
 **Status:** v3 (2026-07-11) — the `meta.yaml` sidecar removed; frontmatter is the only home ([ADR-0005](adr/0005-drop-sidecar.md)). v2 (frontmatter-primary, sidecar override, [ADR-0003](adr/0003-frontmatter-metadata.md)) was earlier the same day; v1 (sidecar-primary) was 2026-07-10.
 
-Dimensions are team-defined key→value metadata on a skill, used to slice usage on the dashboard. **Having dimensions opts the skill into enriched tracking.** Skills without them are still usage-tracked by telemetry (per-skill `skill.name` on cost/token metrics — verified live 2026-07-10; `skill_activated` events also fire but mask custom skill names to `custom_skill`, see `otel/README.md`); they just carry no dimensions to group by.
+Dimensions are team-defined key→value metadata on a skill, used to slice usage on the dashboard. **Having dimensions opts the skill into enriched tracking.** Skills without them are still usage-tracked by telemetry (per-skill `skill.name` on cost/token metrics — verified live 2026-07-10; `skill_activated` events also fire but mask custom skill names to `custom_skill`, see `ops/otel/README.md`); they just carry no dimensions to group by.
 
 ## Where dimensions live
 

@@ -1,6 +1,6 @@
 # Grafana — the Phase 1 dashboard
 
-**Status:** v1 (2026-07-12) · **Ticket:** Baton #79 · **Decision:** [ADR-0002](../docs/adr/0002-query-time-join.md)
+**Status:** v1 (2026-07-12) · **Ticket:** Baton #79 · **Decision:** [ADR-0002](../../docs/adr/0002-query-time-join.md)
 
 [`skill-usage.dashboard.json`](skill-usage.dashboard.json) is the Phase 1 dashboard: disposable Grafana panels that join usage metrics against the `skill_meta` info metrics at query time. It is scaffolding by design — the product path (an app reading the JSON map) replaces it without ceremony.
 
@@ -18,7 +18,7 @@ Dashboard variables filter by person (`user_email`) and by category. Time range 
 ## Prerequisites
 
 1. Usage metrics flowing: the [OTEL rollout](../otel/README.md) — `claude_code_*` metrics with `skill_name` and `user_email` labels.
-2. The metadata map pushed: the [delivery workflow](../docs/delivery.md) landing `skill_meta{job="wield"}` — repo secrets set and the workflow run at least once. Until then the category/dimension panels are empty; the overall panels work on telemetry alone.
+2. The metadata map pushed: the [delivery workflow](../../docs/delivery.md) landing `skill_meta{job="wield"}` — repo secrets set and the workflow run at least once. Until then the category/dimension panels are empty; the overall panels work on telemetry alone.
 
 ## Importing
 
@@ -28,8 +28,8 @@ Grafana → Dashboards → New → Import → upload the JSON (or paste it), the
 
 - **Metric names.** The queries use `claude_code_token_usage_tokens_total` / `claude_code_cost_usage_USD_total` — Grafana Cloud's OTLP translation of `claude_code.token.usage` / `claude_code.cost.usage`, unit suffix included (confirmed live 2026-07-12). Other gateways may drop the unit suffix (`claude_code_token_usage_total`); check what your stack actually has with an Explore query of `{__name__=~"claude_code.*"}` and adjust the panel queries if the names differ.
 - **Everything blank.** Grafana Cloud silently drops delta-temporality sums — the `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative` gotcha in [otel/README.md](../otel/README.md).
-- **Category panels blank, overall panels fine.** The map isn't landing: check the delivery workflow and secrets ([docs/delivery.md](../docs/delivery.md)), and that the daily re-push cron is running — panels look back `25h` for `skill_meta`.
-- **"found duplicate series" error.** A join lost its `topk by (skill_name) (1, last_over_time(…))` wrapper — mandatory on the map side of every `group_left`, see [docs/delivery.md](../docs/delivery.md#freshness-and-hygiene-read-before-writing-panels). Expected for up to a day after a skill's metadata changes _only_ if the wrapper is missing.
+- **Category panels blank, overall panels fine.** The map isn't landing: check the delivery workflow and secrets ([docs/delivery.md](../../docs/delivery.md)), and that the daily re-push cron is running — panels look back `25h` for `skill_meta`.
+- **"found duplicate series" error.** A join lost its `topk by (skill_name) (1, last_over_time(…))` wrapper — mandatory on the map side of every `group_left`, see [docs/delivery.md](../../docs/delivery.md#freshness-and-hygiene-read-before-writing-panels). Expected for up to a day after a skill's metadata changes _only_ if the wrapper is missing.
 
 ## Known limits (accepted for Phase 1)
 

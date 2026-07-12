@@ -1,6 +1,6 @@
 # OTEL rollout — Claude Code usage telemetry
 
-**Status:** draft config, blocked on [consent](../docs/consent.md) and backend sign-off ([ADR-0001](../docs/adr/0001-otlp-backend.md)). Do not deploy before both land.
+**Status:** draft config, blocked on [consent](../../docs/consent.md) and backend sign-off ([ADR-0001](../../docs/adr/0001-otlp-backend.md)). Do not deploy before both land.
 
 This directory holds the managed-settings payload that enables Claude Code's native OpenTelemetry export team-wide. Managed settings have the highest precedence — individual user/project settings cannot override them.
 

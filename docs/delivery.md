@@ -17,7 +17,7 @@ Configured as GitHub Actions secrets; when absent the workflow still renders and
 | `PROM_REMOTE_WRITE_USERNAME` | The stack's numeric instance/user ID                                                                |
 | `PROM_REMOTE_WRITE_PASSWORD` | A `glc_` access-policy token with `metrics:write`                                                   |
 
-The workflow builds the `Authorization: Basic base64(username:password)` header itself — the same encoding gotcha noted in [`otel/README.md`](../otel/README.md) (the token alone, unpaired with the instance ID, fails auth silently).
+The workflow builds the `Authorization: Basic base64(username:password)` header itself — the same encoding gotcha noted in [`ops/otel/README.md`](../ops/otel/README.md) (the token alone, unpaired with the instance ID, fails auth silently).
 
 ## Using it from a skills-bearing repo
 

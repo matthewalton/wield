@@ -31,6 +31,6 @@ When the registry (Baton #86) is built, a third shape joins this contract: the *
 
 ## Adapters
 
-- **Claude Code OTEL** (adapter #1, the only one built): cost/token metrics carry `skill.name` verbatim, per-user attribution comes from standard OTEL resource attributes. Mapping details in [`otel/README.md`](../otel/README.md); backend choice in [ADR-0001](adr/0001-otlp-backend.md).
+- **Claude Code OTEL** (adapter #1, the only one built): cost/token metrics carry `skill.name` verbatim, per-user attribution comes from standard OTEL resource attributes. Mapping details in [`ops/otel/README.md`](../ops/otel/README.md); backend choice in [ADR-0001](adr/0001-otlp-backend.md).
 - **PostToolUse hook** — the documented fallback if metrics-side `skill.name` behavior breaks (see [ADR-0002](adr/0002-query-time-join.md)). Same event shape, minus cost/tokens.
 - **Future agents** — no adapters are built until demand exists. The natural moment is the self-contained app with its own ingest (deferred in ADR-0002): anything that can speak HTTP can then report usage events.
