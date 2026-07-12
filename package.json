@@ -13,6 +13,7 @@
   "scripts": {
     "scan": "node src/scanner/src/cli.ts",
     "push": "node src/push/src/cli.ts",
+    "doctor": "node src/plugin/src/cli.ts",
     "test": "node --test 'src/**/*.test.ts'",
     "typecheck": "tsc",
     "lint": "eslint .",
