@@ -105,6 +105,10 @@ export async function scan(roots: string[]): Promise<ScanResult> {
       continue;
     }
 
+    // readdir order is filesystem-dependent; sort so "first definition wins"
+    // (SCAN-5) is deterministic within a root too (SCAN-38).
+    entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+
     for (const entry of entries) {
       // Dirents report a symlink as a symlink, never a directory — but
       // ~/.claude/skills/<name> is commonly a symlink into a dotfiles repo,

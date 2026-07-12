@@ -123,6 +123,23 @@ test("[SCAN-5] merges roots, and warns when one name has conflicting dimensions"
   assert.match(diagnostics[0]!.message, /usage cannot be attributed between them/);
 });
 
+test("[SCAN-38] within one root, the lexicographically first folder wins a duplicate name", async () => {
+  // Folders created in reverse-lexicographic order: an unsorted readdir walk
+  // (insertion order on many filesystems) would crown the wrong winner.
+  const dir = await root({
+    "zz-fork": { skillMd: tracked("shared", "  category: review\n") },
+    "aa-original": { skillMd: tracked("shared", "  category: plan\n") },
+  });
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.equal(map.skills.shared!.dimensions.category, "plan");
+  assert.match(map.skills.shared!.source, /aa-original/);
+  // Both folders also fire SCAN-3 name-mismatch warnings; pick out the dup one.
+  const dup = diagnostics.find((d) => d.message.includes("usage cannot be attributed"));
+  assert.ok(dup, "expected the duplicate-definition warning");
+  assert.match(dup.file, /zz-fork/);
+});
+
 test("[SCAN-6] an identical skill in two roots is not a conflict", async () => {
   const skillMd = tracked("shared", "  category: plan\n");
   const a = await root({ shared: { skillMd } });

@@ -56,6 +56,16 @@ Telemetry only carries `skill.name`, so duplicates are indistinguishable
 downstream. The first root scanned keeps the name, and a warning says usage
 cannot be attributed between the definitions.
 
+## [SCAN-38] Within one root, duplicate skill names keep the definition from the lexicographically first folder
+
+Skill folders in a root are visited in folder-name order, so "first
+definition" (SCAN-5) is deterministic within a root as well as across roots.
+`readdir` order is filesystem-dependent — before this criterion, two folders
+in one root declaring the same name could swap winners between runs (Baton
+#100, ruled a bug at the carve's ratify pause). Cross-root precedence is
+untouched: roots are still visited in argument order, and a name defined in
+an earlier root always beats a later one regardless of folder names.
+
 ## [SCAN-6] A duplicate definition with identical dimensions produces no diagnostic
 
 The same skill vendored into two roots is normal, not a conflict.
