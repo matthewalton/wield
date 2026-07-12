@@ -49,7 +49,7 @@ Pushed samples carry the push timestamp and are never refreshed by scraping, so 
 2. **Hygiene.** Each push is a full rewrite of the current map, but old series are not deleted — they just stop being pushed. When a skill's scalar dimensions change, both the old and new `skill_meta` series live inside the `last_over_time` window until the old one ages out, and the naive join **errors outright** ("found duplicate series … many-to-many matching not allowed"), blanking the panel. Harden the one side of every join with `topk`:
 
    ```promql
-   sum by (skill_name) (rate(claude_code_token_usage_total[1h]))
+   sum by (skill_name) (rate(claude_code_token_usage_tokens_total[1h]))
      * on(skill_name) group_left(category)
        topk by (skill_name) (1, last_over_time(skill_meta[25h]))
    ```

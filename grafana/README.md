@@ -26,7 +26,7 @@ Grafana → Dashboards → New → Import → upload the JSON (or paste it), the
 
 ## If panels come up empty
 
-- **Metric names.** The queries assume the OTLP gateway translates `claude_code.token.usage` / `claude_code.cost.usage` to `claude_code_token_usage_total` / `claude_code_cost_usage_total`. Some gateways also append the unit (e.g. `_tokens_total`, `_USD_total`). Check what your stack actually has with an Explore query of `{__name__=~"claude_code.*"}` and adjust the panel queries if the names differ.
+- **Metric names.** The queries use `claude_code_token_usage_tokens_total` / `claude_code_cost_usage_USD_total` — Grafana Cloud's OTLP translation of `claude_code.token.usage` / `claude_code.cost.usage`, unit suffix included (confirmed live 2026-07-12). Other gateways may drop the unit suffix (`claude_code_token_usage_total`); check what your stack actually has with an Explore query of `{__name__=~"claude_code.*"}` and adjust the panel queries if the names differ.
 - **Everything blank.** Grafana Cloud silently drops delta-temporality sums — the `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative` gotcha in [otel/README.md](../otel/README.md).
 - **Category panels blank, overall panels fine.** The map isn't landing: check the delivery workflow and secrets ([docs/delivery.md](../docs/delivery.md)), and that the daily re-push cron is running — panels look back `25h` for `skill_meta`.
 - **"found duplicate series" error.** A join lost its `topk by (skill_name) (1, last_over_time(…))` wrapper — mandatory on the map side of every `group_left`, see [docs/delivery.md](../docs/delivery.md#freshness-and-hygiene-read-before-writing-panels). Expected for up to a day after a skill's metadata changes _only_ if the wrapper is missing.
