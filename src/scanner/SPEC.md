@@ -33,6 +33,16 @@ Presence opts in: an entry with `{}` dimensions and no diagnostics.
 Untracked is a legitimate choice, not an omission. This includes a folder with
 no `SKILL.md` at all, and a `SKILL.md` whose frontmatter has no `metadata` key.
 
+## [SCAN-37] A symlinked skill folder is walked like the folder itself
+
+Personal setups commonly symlink `~/.claude/skills/<name>` into a dotfiles or
+agents directory, and Claude Code follows the link when loading the skill —
+so the walk must too. `readdir` dirents report a symlink as a symlink, never
+a directory, which silently dropped 15 of 16 real skills when first pushed
+from a home directory (Baton #117). A symlink whose target holds no readable
+`SKILL.md` is skipped without a diagnostic, exactly like a folder without one
+(SCAN-35).
+
 ## [SCAN-3] A skill's map key is the name declared in SKILL.md frontmatter
 
 That is what Claude Code reports as `skill.name` in telemetry; keying by folder

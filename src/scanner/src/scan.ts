@@ -106,7 +106,11 @@ export async function scan(roots: string[]): Promise<ScanResult> {
     }
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
+      // Dirents report a symlink as a symlink, never a directory — but
+      // ~/.claude/skills/<name> is commonly a symlink into a dotfiles repo,
+      // and Claude Code follows it. Accept the link and let the SKILL.md
+      // read decide: a bad target has no readable SKILL.md (SCAN-35/37).
+      if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
       const skillMd = join(skillsDir, entry.name, "SKILL.md");
 
       const frontmatter = await readFrontmatter(skillMd);

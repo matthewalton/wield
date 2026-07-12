@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -36,6 +36,27 @@ test("[SCAN-33] frontmatter metadata opts a skill into the map", async () => {
     tags: ["experimental"],
   });
   assert.match(map.skills["pr-reviewer"]!.source, /SKILL\.md$/);
+  assert.equal(diagnostics.length, 0);
+});
+
+test("[SCAN-37] a symlinked skill folder is walked like the folder itself", async () => {
+  // The common personal setup: ~/.claude/skills/<name> links into a dotfiles
+  // or agents directory elsewhere.
+  const elsewhere = await mkdtemp(join(tmpdir(), "wield-real-"));
+  const realSkill = join(elsewhere, "planner");
+  await mkdir(realSkill, { recursive: true });
+  await writeFile(join(realSkill, "SKILL.md"), tracked("planner", "  category: plan\n"));
+
+  const dir = await mkdtemp(join(tmpdir(), "wield-"));
+  const skillsDir = join(dir, ".claude", "skills");
+  await mkdir(skillsDir, { recursive: true });
+  await symlink(realSkill, join(skillsDir, "planner"));
+  // A dangling symlink has no readable SKILL.md: skipped silently (SCAN-35).
+  await symlink(join(elsewhere, "gone"), join(skillsDir, "gone"));
+
+  const { map, diagnostics } = await scan([dir]);
+  assert.deepEqual(Object.keys(map.skills), ["planner"]);
+  assert.deepEqual(map.skills.planner!.dimensions, { category: "plan" });
   assert.equal(diagnostics.length, 0);
 });
 
