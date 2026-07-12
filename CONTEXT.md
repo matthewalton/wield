@@ -30,7 +30,7 @@ Skill activity observed via Claude Code OTEL telemetry, keyed by `skill.name` on
 _Avoid_: adoption, activity
 
 **Scanner**:
-The tool (`src/scanner/scan.ts`) that walks `.claude/skills/*/` in one or more roots — reading each skill's frontmatter `metadata` — and exports the metadata map. A stateless pure function: files in, map out; it stores nothing and touches no network. Layout-agnostic: a monorepo is the single-root case, not a special case. Delivery (getting its output into a metrics store) is CI's job, not the scanner's.
+The tool (`src/scanner/scan.ts`) that walks `.claude/skills/*/` in one or more roots — reading each skill's frontmatter `metadata` — and exports the metadata map. A stateless pure function: files in, map out; it stores nothing and touches no network. Layout-agnostic: a monorepo is the single-root case, not a special case. Delivery (getting its output into a metrics store) is never the scanner's own job — it belongs to a delivery leg: CI for repo-hosted skills, the push slice (`src/push/`) for skills on a person's machine (docs/delivery.md).
 
 **Metadata map**:
 The contract every downstream consumer depends on: skill name → dimensions. The dashboard joins it against usage on `skill.name`. The JSON form is the durable artifact; the Prometheus info-metric form is a Phase 1 adapter on top of it. Producers are pluggable (ADR-0003): the scanner is metadata source #1; a CMS adapter or app-side tagging may later emit the same shape.

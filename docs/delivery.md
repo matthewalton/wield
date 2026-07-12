@@ -3,7 +3,7 @@
 **Status:** v1 (2026-07-11), per [ADR-0003 §4](adr/0003-frontmatter-metadata.md)
 **Ticket:** Baton #94
 
-The scanner is a stateless pure function — files in, map out; no storage, no network. Delivery is CI glue around it: [`push-skill-metadata.yml`](../.github/workflows/push-skill-metadata.yml) runs on merge to main (plus a daily re-push and manual dispatch), renders the map in both formats, uploads the **JSON map as the build artifact** (the durable deliverable), and pushes the **Prometheus info metrics** to the metrics store via `promtool push metrics`. Without this leg, the Phase 1 `group_left` join has nothing to join against.
+The scanner is a stateless pure function — files in, map out; no storage, no network. Delivery wraps it, in two legs. The **CI leg**: [`push-skill-metadata.yml`](../.github/workflows/push-skill-metadata.yml) runs on merge to main (plus a daily re-push and manual dispatch), renders the map in both formats, uploads the **JSON map as the build artifact** (the durable deliverable), and pushes the **Prometheus info metrics** to the metrics store via `promtool push metrics`. The **local leg**: `wield push` ([`src/push/`](../src/push/SPEC.md)) scans and pushes the same series from a machine directly, for skills no CI ever checks out. Without delivery, the Phase 1 `group_left` join has nothing to join against.
 
 This whole leg is Phase 1 scaffolding: the product path (app-side join reading the JSON map, [ADR-0002](adr/0002-query-time-join.md)) needs none of it.
 
@@ -37,6 +37,21 @@ jobs:
       roots: . # space-separated roots to scan
     secrets: inherit
 ```
+
+## Pushing from your own machine (personal skills)
+
+Personal skills live in `~/.claude/skills`, which no CI checks out — the reason the local leg exists (src/push/decisions/0001, Baton #117). One command scans and delivers them:
+
+```sh
+export $(grep -v '^#' .env | xargs)   # or any other way to set PROM_REMOTE_WRITE_*
+npm run push -- --root ~              # ~/.claude/skills is <root>/.claude/skills for --root ~
+```
+
+The push takes the same three variables as the CI secrets (table above) from the environment, attaches `job="wield"`, and stamps samples at push time — wire-identical to the CI leg. `--dry-run` prints what would be delivered and needs no configuration. Note the skill only enters the map once its `SKILL.md` frontmatter carries a `metadata` field (docs/FORMAT.md).
+
+The freshness rules below apply unchanged: a local push keeps the map visible for the panel window (`25h` as written), so re-run it at least daily while you want your skills on the dashboard — cron, launchd, or by hand. Scheduling is deliberately not the CLI's job.
+
+## Non-Prometheus stores
 
 For non-Prometheus-flavored stores, the standard bridges are: scrape the rendered file from somewhere, a native import endpoint (e.g. VictoriaMetrics `/api/v1/import/prometheus`), or a custom adapter reading the JSON map artifact.
 
