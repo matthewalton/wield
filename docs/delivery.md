@@ -49,7 +49,7 @@ npm run push -- --root ~              # ~/.claude/skills is <root>/.claude/skill
 
 The push takes the same three variables as the CI secrets (table above) from the environment, attaches `job="wield"`, and stamps samples at push time — wire-identical to the CI leg. `--dry-run` prints what would be delivered and needs no configuration. Note the skill only enters the map once its `SKILL.md` frontmatter carries a `metadata` field (docs/FORMAT.md).
 
-The freshness rules below apply unchanged: a local push keeps the map visible for the panel window (`25h` as written), so re-run it at least daily while you want your skills on the dashboard — cron, launchd, or by hand. Scheduling is deliberately not the CLI's job.
+The freshness rules below apply unchanged: a local push keeps the map visible for the panel window (`25h` as written), so re-run it at least daily while you want your skills on the dashboard. Scheduling is deliberately not the CLI's job — a ready-made macOS LaunchAgent recipe lives in [`ops/launchd/`](../ops/launchd/README.md).
 
 ## Non-Prometheus stores
 
