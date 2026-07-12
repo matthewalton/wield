@@ -24,15 +24,24 @@ Options:
   --help           Show this message
 `;
 
-const { values } = parseArgs({
-  options: {
-    root: { type: "string", multiple: true, default: [] },
-    format: { type: "string", default: "json" },
-    out: { type: "string" },
-    strict: { type: "boolean", default: false },
-    help: { type: "boolean", default: false },
-  },
-});
+function parseCliArgs() {
+  try {
+    return parseArgs({
+      options: {
+        root: { type: "string", multiple: true, default: [] },
+        format: { type: "string", default: "json" },
+        out: { type: "string" },
+        strict: { type: "boolean", default: false },
+        help: { type: "boolean", default: false },
+      },
+    });
+  } catch (error) {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exit(2);
+  }
+}
+
+const { values } = parseCliArgs();
 
 if (values.help) {
   process.stdout.write(USAGE);

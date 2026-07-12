@@ -73,6 +73,20 @@ test("[SCAN-26] an unrecognised --format exits 2 with the complaint on stderr", 
   assert.match(stderr, /unknown --format "xml"/);
 });
 
+test("[SCAN-36] an unrecognised flag exits 2 with the complaint on stderr", async () => {
+  const unknownFlag = await run(["--frmat", "json"]);
+  assert.equal(unknownFlag.code, 2);
+  assert.equal(unknownFlag.stdout, "");
+  assert.match(unknownFlag.stderr, /--frmat/);
+  assert.doesNotMatch(unknownFlag.stderr, /^\s+at /m); // a complaint, not a stack trace
+
+  const missingValue = await run(["--format"]);
+  assert.equal(missingValue.code, 2);
+  assert.equal(missingValue.stdout, "");
+  assert.match(missingValue.stderr, /--format/);
+  assert.doesNotMatch(missingValue.stderr, /^\s+at /m);
+});
+
 test("[SCAN-27] diagnostics are written to stderr as level: file: message lines", async () => {
   const dir = await mkdtemp(join(tmpdir(), "wield-"));
   const { stderr } = await run(["--root", dir]);

@@ -147,6 +147,14 @@ purposes.
 
 Exit 2 is the usage-error code; nothing is scanned.
 
+## [SCAN-36] An unrecognised flag exits 2 with the complaint on stderr
+
+Covers everything argument parsing rejects: an unknown flag (`--frmat json`)
+and a flag missing its required value (`--format` as the last argument). The
+complaint is a single line, not a stack trace; nothing is scanned. Found as a
+carve-finding (Baton #99): strict `parseArgs` previously threw an uncaught
+`TypeError` — raw stack trace, exit 1.
+
 ## [SCAN-27] Diagnostics are written to stderr as level: file: message lines
 
 Stdout stays clean for the map, so piping the output is safe.
