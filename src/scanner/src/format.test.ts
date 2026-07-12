@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { validateDimensions } from "./format.ts";
 
 test("[SCAN-9] accepts strings and lists of strings", () => {

@@ -14,7 +14,8 @@
     "scan": "node src/scanner/src/cli.ts",
     "push": "node src/push/src/cli.ts",
     "doctor": "node src/plugin/src/cli.ts",
-    "test": "node --test 'src/**/*.test.ts'",
+    "test": "vitest run",
+    "mutate": "stryker run",
     "typecheck": "tsc",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -29,6 +30,8 @@
     "yaml": "^2.5.0"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^26.1.1",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
@@ -36,6 +39,7 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.9.5",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.63.0"
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
   }
 }

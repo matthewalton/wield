@@ -27,7 +27,8 @@ govern existing code, `strengthen` to measure how well tests defend a slice — 
 
 ```sh
 npm install
-npm test              # node --test, no framework
+npm test              # vitest run (assertions stay node:assert/strict)
+npm run mutate        # StrykerJS mutation testing (ADR-0006; cli.ts files excluded)
 npm run typecheck
 npm run lint          # eslint, repo-wide
 npm run format:check  # prettier, repo-wide
