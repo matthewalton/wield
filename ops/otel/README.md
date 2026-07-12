@@ -13,20 +13,21 @@ Verified against [the monitoring docs](https://code.claude.com/docs/en/monitorin
 - **Attribution** — `user.id`, `user.email`, `organization.id`, `session.id` on metrics/events.
 - Session/productivity metrics (`claude_code.session.count`, `lines_of_code.count`, etc.) come along for free.
 
-### skill.name masking — the design risk (updated 2026-07-10 after live testing)
+### skill.name masking — the design risk (updated 2026-07-12 after OTLP capture testing)
 
-`skill.name` is masked differently on events vs metrics; this was confirmed empirically (a personal skill arrived as `custom_skill`) and then in the docs fine print:
+`skill.name` is masked differently per signal. Verified empirically on Claude Code v2.1.207 (2026-07-12) by capturing raw OTLP payloads from a probe skill committed to project settings (`skill.source=projectSettings`); the userSettings column was verified live on 2026-07-10:
 
-| Signal                   | Built-in / bundled / official marketplace | User-defined (incl. our skills)                       | Third-party plugin           |
-| ------------------------ | ----------------------------------------- | ----------------------------------------------------- | ---------------------------- |
-| `skill_activated` events | verbatim                                  | **`"custom_skill"`** unless `OTEL_LOG_TOOL_DETAILS=1` | `"custom_skill"` (same rule) |
-| cost/token metrics       | verbatim                                  | **verbatim — verified live 2026-07-10**               | `"third-party"`              |
+| Signal                   | Built-in / bundled / official marketplace | User-defined — userSettings AND projectSettings (verified identical)                        | Third-party plugin           |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------- |
+| `skill_activated` events | verbatim                                  | **`"custom_skill"`** unless `OTEL_LOG_TOOL_DETAILS=1` (unmask verified working on v2.1.207) | `"custom_skill"` (same rule) |
+| `api_request` events     | verbatim                                  | **verbatim — even at default settings**                                                     | untested                     |
+| cost/token metrics       | verbatim                                  | **verbatim**                                                                                | `"third-party"`              |
 
 Implications for the dashboard join:
 
-- **Confirmed on the live pipeline (2026-07-10): metrics carry user-defined skill names verbatim.** The dashboard join therefore runs on **metrics** (per-skill cost/tokens/activity); events add invocation-trigger detail but mask custom skill names.
-- Getting verbatim names on **events** requires `OTEL_LOG_TOOL_DETAILS=1`, which also exports tool parameters — conflicting with the privacy commitment below. With direct export there is nothing in the path to strip tool params while keeping skill names; a small team collector doing attribute filtering would resolve this (revisits ADR-0001's "no collector" choice).
-- Whether project skills (`skill.source=projectSettings`) are masked like user skills on events is **not documented** — test empirically before the team rollout.
+- **Metrics carry user-defined skill names verbatim** (userSettings and projectSettings both). The dashboard join runs on **metrics** (per-skill cost/tokens/activity); `skill_activated` events add invocation-trigger detail but mask custom skill names.
+- The mask is not actually protective: `api_request` events in the same default log stream carry the exact skill name verbatim. Upstream history: anthropics/claude-code#58674 reported the `skill_activated` masking as a regression (verbatim ≤2.1.112, masked ≥2.1.126) — stale-closed without resolution. We re-reported with the full capture evidence: anthropics/claude-code#76957 (filed 2026-07-12).
+- Getting verbatim names on `skill_activated` requires `OTEL_LOG_TOOL_DETAILS=1`, which is documented to also export tool parameters — conflicting with the privacy commitment below. With direct export there is nothing in the path to strip tool params while keeping skill names; a small team collector doing attribute filtering would resolve this (revisits ADR-0001's "no collector" choice).
 
 Also: user-defined agent names are masked to `"custom"` on metrics.
 
