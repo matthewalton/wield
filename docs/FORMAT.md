@@ -70,4 +70,24 @@ $ node src/scanner/cli.ts --root examples/repo --format prom # Phase 1 Grafana a
 
 The map is a **contract, not a scanner detail**: anything that emits the same shape keyed by real `skill.name`s is a legitimate metadata source ([ADR-0003](adr/0003-frontmatter-metadata.md) — e.g. a CMS adapter, or app-side tagging later). The scanner is source #1, the one every team with a git repo already has.
 
+### The JSON export shape
+
+What the scanner actually writes is the map inside an export document — provenance around the entries:
+
+```json
+{
+  "version": 1,
+  "roots": ["/abs/path/scanned"],
+  "skills": {
+    "ticket-planner": {
+      "name": "ticket-planner",
+      "dimensions": { "category": "plan", "tags": ["experimental"] },
+      "source": "examples/repo/.claude/skills/ticket-planner/SKILL.md"
+    }
+  }
+}
+```
+
+Each `skills` entry's `dimensions` is the map value for that key; `version`, `roots`, and the per-entry `name`/`source` are bookkeeping, not dimensions. Consumers accept this export **and** the bare `skill name → dimensions` object — the boundary shape above — discriminated by the numeric `version` (in a bare map, `version: 1` would be an invalid dimensions value). A non-scanner source may emit either; wield-app's parser accepts both (its `src/metadata/decisions/0002-accept-scanner-export.md`) and pins the export shape with a checked-in fixture of real scanner output.
+
 Two skills sharing one name across roots cannot be told apart by telemetry, so the scanner keeps the first and warns. A skill with no dimensions is simply untracked: still counted in overall usage, just carrying no dimensions.
