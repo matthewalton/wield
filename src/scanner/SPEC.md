@@ -127,6 +127,12 @@ collapse the set; it fans out to skill_tag instead (ADR-0002).
 
 No members, no metric — including its HELP/TYPE header lines.
 
+## [SCAN-39] Every metric is introduced by HELP and TYPE headers declaring a gauge
+
+A series without a TYPE header is untyped to every consumer, and the HELP line
+is where a human first meets the metric. `skill_meta`'s headers always render;
+`skill_tag`'s render exactly when the metric itself does (SCAN-18).
+
 ## [SCAN-19] A dimension key that is not a valid Prometheus label name is exported under a sanitized label with a warning
 
 Invalid characters become `_`; a result that still fails the label grammar is

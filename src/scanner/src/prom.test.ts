@@ -18,12 +18,14 @@ const seriesOf = (text: string, metric: string) =>
   text.split("\n").filter((l) => l.startsWith(metric));
 
 test("[SCAN-15] scalars become labels on one skill_meta series per skill", () => {
-  const { text } = renderInfoMetrics(
+  const { text, diagnostics } = renderInfoMetrics(
     mapOf({ "ticket-planner": { category: "plan", author: "sarah" } }),
   );
   assert.ok(
     text.includes('skill_meta{skill_name="ticket-planner",author="sarah",category="plan"} 1'),
   );
+  // Valid keys render without any diagnostic.
+  assert.equal(diagnostics.length, 0);
 });
 
 test("[SCAN-14] every skill gets exactly one skill_meta series, so group_left stays safe", () => {
@@ -61,7 +63,14 @@ test("[SCAN-18] the skill_tag metric is omitted entirely when nothing is set-val
 test("[SCAN-19] dimension keys that are not valid label names are sanitized, with a warning", () => {
   const { text, diagnostics } = renderInfoMetrics(mapOf({ a: { "forked-from": "grill-me" } }));
   assert.ok(text.includes('forked_from="grill-me"'));
+  assert.equal(diagnostics[0]!.level, "warn");
   assert.match(diagnostics[0]!.message, /not a valid Prometheus label name/);
+});
+
+test("[SCAN-19] a sanitized label that still fails the grammar is prefixed with an underscore", () => {
+  const { text, diagnostics } = renderInfoMetrics(mapOf({ a: { "0-key": "x" } }));
+  assert.ok(text.includes('_0_key="x"'));
+  assert.equal(diagnostics.length, 1);
 });
 
 test("[SCAN-20] two keys that sanitize to the same label never emit a duplicate label", () => {
@@ -71,13 +80,29 @@ test("[SCAN-20] two keys that sanitize to the same label never emit a duplicate 
     mapOf({ a: { "forked-from": "x", forked_from: "y" } }),
   );
   assert.deepEqual(seriesOf(text, "skill_meta{"), ['skill_meta{skill_name="a",forked_from="x"} 1']);
-  assert.ok(diagnostics.some((d) => d.message.includes("collides")));
+  const collision = diagnostics.find((d) => d.message.includes("collides"));
+  assert.equal(collision?.level, "warn");
 });
 
 test("[SCAN-21] a dimension colliding with a reserved label is dropped, with a warning", () => {
   const { text, diagnostics } = renderInfoMetrics(mapOf({ a: { skill_name: "impostor" } }));
   assert.deepEqual(seriesOf(text, "skill_meta{"), ['skill_meta{skill_name="a"} 1']);
+  assert.equal(diagnostics[0]!.level, "warn");
   assert.match(diagnostics[0]!.message, /collides with the reserved label/);
+});
+
+test("[SCAN-21] key and value are reserved alongside skill_name", () => {
+  const { text, diagnostics } = renderInfoMetrics(mapOf({ a: { key: "x", value: "y" } }));
+  assert.deepEqual(seriesOf(text, "skill_meta{"), ['skill_meta{skill_name="a"} 1']);
+  assert.equal(diagnostics.length, 2);
+});
+
+test("[SCAN-39] each metric is introduced by HELP and TYPE headers declaring a gauge", () => {
+  const { text } = renderInfoMetrics(mapOf({ a: { category: "plan", tags: ["x"] } }));
+  assert.match(text, /^# HELP skill_meta .+$/m);
+  assert.match(text, /^# TYPE skill_meta gauge$/m);
+  assert.match(text, /^# HELP skill_tag .+$/m);
+  assert.match(text, /^# TYPE skill_tag gauge$/m);
 });
 
 test("[SCAN-22] quotes and backslashes in values are escaped", () => {

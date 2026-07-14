@@ -35,6 +35,7 @@ interface Frontmatter {
   hasMetadata: boolean;
 }
 
+// Stryker disable next-line ObjectLiteral: callers read only hasMetadata before skipping, and undefined is as falsy as false
 const NO_FRONTMATTER: Frontmatter = { name: null, metadata: undefined, hasMetadata: false };
 
 /** Null means no SKILL.md; a malformed frontmatter block is Claude Code's problem, not ours. */
@@ -47,6 +48,7 @@ async function readFrontmatter(skillMd: string): Promise<Frontmatter | null> {
   }
 
   const lines = text.split(/\r?\n/);
+  // Stryker disable next-line OptionalChaining: split always returns at least one element
   if (lines[0]?.trim() !== "---") return NO_FRONTMATTER;
   const end = lines.indexOf("---", 1);
   if (end === -1) return NO_FRONTMATTER;
@@ -55,7 +57,7 @@ async function readFrontmatter(skillMd: string): Promise<Frontmatter | null> {
   try {
     parsed = parse(lines.slice(1, end).join("\n"));
   } catch {
-    return NO_FRONTMATTER;
+    // Swallowed: parsed stays undefined, and the guard below returns NO_FRONTMATTER.
   }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return NO_FRONTMATTER;
 
@@ -86,6 +88,15 @@ function skillName(
 const sameDimensions = (a: Dimensions, b: Dimensions): boolean =>
   JSON.stringify(Object.entries(a).sort()) === JSON.stringify(Object.entries(b).sort());
 
+/**
+ * readdir order is filesystem-dependent; sorting keeps "first definition wins"
+ * (SCAN-5) deterministic within a root too (SCAN-38). Exported for direct
+ * testing — APFS returns entries already name-ordered, so no walk over a real
+ * directory on macOS can observe this sort.
+ */
+export const byFolderName = (a: { name: string }, b: { name: string }): number =>
+  a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+
 export async function scan(roots: string[]): Promise<ScanResult> {
   const diagnostics: Diagnostic[] = [];
   const skills: Record<string, SkillEntry> = {};
@@ -105,15 +116,15 @@ export async function scan(roots: string[]): Promise<ScanResult> {
       continue;
     }
 
-    // readdir order is filesystem-dependent; sort so "first definition wins"
-    // (SCAN-5) is deterministic within a root too (SCAN-38).
-    entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    // Stryker disable next-line MethodExpression: APFS readdir is already name-ordered, so dropping the sort is unobservable here; it defends other filesystems (SCAN-38)
+    entries.sort(byFolderName);
 
     for (const entry of entries) {
       // Dirents report a symlink as a symlink, never a directory — but
       // ~/.claude/skills/<name> is commonly a symlink into a dotfiles repo,
       // and Claude Code follows it. Accept the link and let the SKILL.md
       // read decide: a bad target has no readable SKILL.md (SCAN-35/37).
+      // Stryker disable next-line ConditionalExpression: a plain file's <name>/SKILL.md can never be read, so walking it degenerates to the same untracked skip
       if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
       const skillMd = join(skillsDir, entry.name, "SKILL.md");
 

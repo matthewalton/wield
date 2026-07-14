@@ -28,17 +28,28 @@ test("[SCAN-10] rejects numbers, booleans and nested maps, keeping the valid key
   assert.deepEqual(dimensions, { category: "plan" });
   assert.equal(diagnostics.length, 3);
   assert.ok(diagnostics.every((d) => d.level === "error"));
+  // The error names the offending key.
+  assert.match(diagnostics[0]!.message, /"cost"/);
 });
 
 test("[SCAN-11] rejects a list with a non-string member", () => {
   const { dimensions, diagnostics } = validateDimensions({ tags: ["plan", 7] }, "SKILL.md");
   assert.deepEqual(dimensions, {});
+  assert.equal(diagnostics[0]!.level, "error");
   assert.match(diagnostics[0]!.message, /every member must be a string/);
+});
+
+test("[SCAN-11] the error names the first bad member's type", () => {
+  const nul = validateDimensions({ tags: [null, 7] }, "SKILL.md");
+  assert.match(nul.diagnostics[0]!.message, /contains null/);
+  const nested = validateDimensions({ tags: [["deep"]] }, "SKILL.md");
+  assert.match(nested.diagnostics[0]!.message, /contains a list/);
 });
 
 test("[SCAN-12] rejects a metadata field that is not a map", () => {
   const { diagnostics } = validateDimensions(["plan"], "SKILL.md");
-  assert.match(diagnostics[0]!.message, /must be a key → value map/);
+  // SCAN-12 promises the error describes what was found instead.
+  assert.match(diagnostics[0]!.message, /must be a key → value map, got a list/);
 });
 
 test("[SCAN-13] unknown keys are never errors", () => {

@@ -30,7 +30,6 @@ export interface Diagnostic {
 }
 
 export const isScalar = (v: DimensionValue): v is string => typeof v === "string";
-export const isSet = (v: DimensionValue): v is string[] => Array.isArray(v);
 
 const describe = (v: unknown): string => {
   if (v === null) return "null";
