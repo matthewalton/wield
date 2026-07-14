@@ -67,6 +67,15 @@ numeric instance ID, password the access-policy token. The token alone,
 unpaired with the instance ID, fails auth silently (the gotcha in
 docs/delivery.md and ops/otel/README.md).
 
+## [PUSH-15] Exposition text that cannot be read back into series is rejected with an error saying what was unreadable and naming the offending line
+
+The parser is the drift alarm for the wire-compatibility contract: the push
+delivers exactly what the rendering prints (decisions/0001), so rendered text
+the parser can no longer read must fail loudly — a series line without labels,
+a malformed or unterminated label value, an unreadable sample value — rather
+than deliver mis-read series. Each rejection says which of those it hit and
+quotes the line, so the drift is diagnosable from the message alone.
+
 ### Outcome reporting
 
 ## [PUSH-8] A missing push-configuration variable exits 2 with a complaint naming it

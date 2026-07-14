@@ -16,9 +16,11 @@ export interface Series {
 function readQuoted(line: string, start: number): { value: string; end: number } {
   let value = "";
   let i = start;
+  // Stryker disable next-line EqualityOperator: an extra pass at i === line.length only grows a value the unterminated-value throw discards
   while (i < line.length && line[i] !== '"') {
     if (line[i] === "\\") {
       const next = line[i + 1];
+      // Stryker disable next-line StringLiteral: the fallback runs only when the backslash ends the line, a path that always ends in the unterminated-value throw
       value += next === "n" ? "\n" : (next ?? "");
       i += 2;
     } else {
@@ -47,7 +49,7 @@ function parseLine(line: string): Series {
     i = end;
   }
 
-  const value = Number(line.slice(i + 1).trim());
+  const value = Number(line.slice(i + 1));
   if (Number.isNaN(value)) throw new Error(`unreadable sample value in: ${line}`);
   return { name, labels, value };
 }
