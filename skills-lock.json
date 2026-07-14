@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "carve-feature": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/carve-feature/SKILL.md",
+      "computedHash": "16c17f63cdc9ee139e87124df3fc3a4f6ea196c2fe090501be4143c5031b404c"
+    },
+    "conform": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/conform/SKILL.md",
+      "computedHash": "d5d62e5a7635a8c0a0fa2497fe1eefa7ce37099b90ca508ea789dfa6994bcc4e"
+    },
+    "feature": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/feature/SKILL.md",
+      "computedHash": "654856a43b04dd49cd5e3dfd997ad08bc11a939c413935f0bef31204f4891c61"
+    },
+    "implement-feature": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/implement-feature/SKILL.md",
+      "computedHash": "8a3c0761d211e6488c752cf3a56e174cde1216e686dcd72c72bfb82c6f75cfed"
+    },
+    "plan-feature": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/plan-feature/SKILL.md",
+      "computedHash": "b88781f378cb121ab210d9d98c600ee70ce8b363e32940b283406d6e49d74226"
+    },
+    "spec-feature": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/spec-feature/SKILL.md",
+      "computedHash": "04b13361f825aeafa008cadd4629bb6c24b27ee990c6b12345df10b3c87f8e9d"
+    },
+    "strengthen": {
+      "source": "matthewalton/speccle",
+      "sourceType": "github",
+      "skillPath": "packages/plugin/skills/strengthen/SKILL.md",
+      "computedHash": "e671b630f99689378a6f61302d797440ebaf6859f557ca4bac7588c7a3753c67"
+    }
+  }
+}
