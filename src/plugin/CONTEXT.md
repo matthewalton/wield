@@ -33,5 +33,14 @@ _Avoid_: env block, OTEL settings, telemetry config
 
 **Settings file**:
 The per-user `~/.claude/settings.json` that `--write` merges into — the
-individuals' path when managed settings are not deployed machine-wide.
+individuals' path when managed settings are not deployed machine-wide. Also
+where the doctor reads `enabledPlugins` for the plugin skills section.
 _Avoid_: user settings, global settings
+
+**Non-official plugin**:
+An installed plugin whose marketplace is not `claude-plugins-official`.
+Claude Code masks its skills to the literal `third-party` on cost/token
+metrics (anthropics/claude-code#77541), so its usage cannot be attributed
+per skill.
+_Avoid_: third-party plugin (the metric literal, not a category), community
+plugin

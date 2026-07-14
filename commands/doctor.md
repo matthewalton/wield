@@ -15,7 +15,10 @@ configured to export usage telemetry, and can this machine push metadata?
    on this machine exports usage (any `unset` line, or an unreachable OTLP
    endpoint, makes the exit 1); the push configuration section is
    informational — a person on the CI delivery leg legitimately has none of
-   it set.
+   it set. The plugin skills section is also informational: skills from
+   non-official plugins report as one `third-party` bucket on metrics
+   (no opt-out — see the linked upstream issue), so their usage cannot be
+   attributed per skill on the dashboard.
 
 3. If telemetry variables are unset, offer the fix paths: team machines get
    the block via managed settings (an ops step, see

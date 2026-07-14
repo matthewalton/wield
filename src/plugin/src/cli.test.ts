@@ -252,6 +252,44 @@ test("[PLUGIN-15] a REPLACE_ME placeholder in the source block aborts the write"
   await assert.rejects(readFile(fixture.settingsPath));
 });
 
+test("[PLUGIN-18] the doctor's report carries the plugin skills section", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "wield-doctor-"));
+  const settingsPath = join(dir, "settings.json");
+  await writeFile(
+    settingsPath,
+    JSON.stringify({ enabledPlugins: { "speccle@speccle-marketplace": true } }),
+  );
+  const { stdout } = await run(["--settings", settingsPath]);
+  assert.match(stdout, /^plugin skills:$/m);
+  assert.match(stdout, /speccle@speccle-marketplace.*third-party/);
+  assert.match(stdout, /issues\/77541/);
+});
+
+test("[PLUGIN-20] a masking warning never affects the doctor exit code", async () => {
+  const endpoint = await startEndpoint();
+  try {
+    const dir = await mkdtemp(join(tmpdir(), "wield-doctor-"));
+    const settingsPath = join(dir, "settings.json");
+    await writeFile(
+      settingsPath,
+      JSON.stringify({ enabledPlugins: { "speccle@speccle-marketplace": true } }),
+    );
+    const warned = await run(["--settings", settingsPath], await fullTelemetryEnv(endpoint.url));
+    assert.match(warned.stdout, /third-party/);
+    assert.equal(warned.code, 0); // healthy telemetry wins, warning or not
+
+    // Nothing to warn about: the section still appears, with its none-line.
+    const emptyPath = join(dir, "empty-settings.json");
+    await writeFile(emptyPath, JSON.stringify({}));
+    const quiet = await run(["--settings", emptyPath], await fullTelemetryEnv(endpoint.url));
+    assert.equal(quiet.code, 0);
+    assert.match(quiet.stdout, /^plugin skills:$/m);
+    assert.match(quiet.stdout, /none/);
+  } finally {
+    await endpoint.close();
+  }
+});
+
 test("[PLUGIN-16] --help prints usage and exits 0", async () => {
   const { code, stdout } = await run(["--help"]);
   assert.equal(code, 0);

@@ -98,6 +98,34 @@ DNS, timeout) is reported in a single line, never a stack trace (the SCAN-36 /
 PUSH-11 stance), and makes the exit 1. No endpoint set, no probe — the unset
 line from PLUGIN-9 already tells the story.
 
+### The plugin skills section
+
+## [PLUGIN-18] Doctor reports each enabled non-official plugin as masked on metrics
+
+Claude Code reports every skill from a non-official plugin as the literal
+`skill.name` `third-party` on cost/token metrics, with no opt-out
+(anthropics/claude-code#77541 — the section surfaces that URL so the reader
+can track it). Enabled plugins live in the settings file's `enabledPlugins`
+map (`"plugin@marketplace": boolean`); the doctor reads the same file
+`--settings` overrides for the write (PLUGIN-13), keeping tests out of the
+real home directory. One line per plugin. A missing or unreadable settings
+file reads as no enabled plugins — one informational line, never a stack
+trace (the SCAN-36 / PUSH-11 stance). The detection logic lives in its own
+module so mutation measures it (ADR-0006 excludes `cli.ts`).
+
+## [PLUGIN-19] Official-marketplace and disabled plugins produce no masking warning
+
+`claude-plugins-official` skills report verbatim, and a disabled plugin
+(`false` in `enabledPlugins`) loads no skills — neither is a masking
+problem. Built-in, user, and project skills never appear in
+`enabledPlugins` at all.
+
+## [PLUGIN-20] A masking warning never affects the doctor exit code
+
+Masking degrades analytics; it does not break telemetry, and PLUGIN-11 owns
+the exit. With nothing to warn about the section prints a single none-line —
+the section always appears, matching the report's status-line style.
+
 ### The settings write
 
 ## [PLUGIN-13] --write merges the telemetry block into the settings file

@@ -11,15 +11,17 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
+import { maskedPluginsSection } from "./masked-plugins.ts";
 
 const DEFAULT_SOURCE = new URL("../../../ops/otel/managed-settings.json", import.meta.url);
 
 const USAGE = `wield doctor — diagnose this machine's skill-tracking setup
 
 Reports the telemetry block (is Claude Code configured to export usage?),
-probes the OTLP endpoint when one is set, and reports the push configuration.
-Exit 0 means telemetry is fully configured; push configuration never affects
-the exit.
+probes the OTLP endpoint when one is set, reports the push configuration,
+and warns about enabled non-official plugins (their skills report as
+"third-party" on metrics). Exit 0 means telemetry is fully configured; push
+configuration and plugin warnings never affect the exit.
 
 Options:
   --write             Merge the telemetry block into the settings file
@@ -132,6 +134,13 @@ const PUSH_CONFIG_VARS = [
 ];
 process.stdout.write("push configuration:\n");
 for (const name of PUSH_CONFIG_VARS) process.stdout.write(status(name));
+
+// Enabled non-official plugins are masked to "third-party" on metrics —
+// informational only (PLUGIN-20): masking degrades analytics, not telemetry.
+const settingsPath = values.settings ?? join(homedir(), ".claude", "settings.json");
+const settingsText = await readFile(settingsPath, "utf8").catch(() => null);
+process.stdout.write("plugin skills:\n");
+for (const line of maskedPluginsSection(settingsText)) process.stdout.write(`${line}\n`);
 
 // Telemetry is the product's spine: exit 0 means Claude Code on this machine
 // is configured to export usage. Push configuration never affects the exit —
